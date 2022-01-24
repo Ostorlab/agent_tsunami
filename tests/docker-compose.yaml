@@ -4,7 +4,7 @@ services:
     image: agent__agent_tsunami:v0.0.0
     restart: always
     volumes:
-      - /home/oem/project/agent_tsunami/src:/app
+      - /home/oem/project/agent_tsunami/agent:/app
 
   jupyter-base-notebook:
     image: jupyter/base-notebook
