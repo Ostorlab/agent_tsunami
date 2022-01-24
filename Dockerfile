@@ -50,8 +50,7 @@ RUN git clone https://github.com/nmap/ncrack /opt/ncrack &&\
 
 FROM base
 # Install dependencies
-RUN apk add nmap ca-certificates openjdk8
-
+RUN apk add nmap ca-certificates openjdk8 nmap-scripts
 WORKDIR /usr/tsunami
 COPY --from=tsunami_builder /usr/tsunami /usr/tsunami
 RUN mkdir -p /usr/tsunami/logs
