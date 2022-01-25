@@ -1,0 +1,14 @@
+version: '3'
+services:
+  tsunami:
+    image: agent__agent_tsunami:v0.0.0
+    restart: always
+    volumes:
+      - /home/oem/project/agent_tsunami/agent:/app
+
+  jupyter-base-notebook:
+    image: jupyter/base-notebook
+    restart: always
+    command: start-notebook.sh --NotebookApp.token=''
+    ports:
+      - "8888:8888"
