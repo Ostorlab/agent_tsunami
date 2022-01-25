@@ -1,78 +1,106 @@
 """Simple wrapper for tsunami scanner."""
 import json
-import re
-from dataclasses import dataclass
-import subprocess
 import logging
-import os
+import subprocess
+import tempfile
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
+class Target:
+    target_address: str
+    target_version: str
+
+
 class Tsunami:
     """Tsunami wrapper to enable using tsunami scanner from ostorlab agent class."""
-    target: str
-    target_type: str
+    _output_file: str = ''
 
-    @property
-    def _output_file_name(self):
-        """Generate a unique name for the output file."""
-        output_file_name = re.sub(r'[^\w\s-]', '', self.target.lower())
-        output_file_name = re.sub(r'[-\s]+', '-', output_file_name).strip('-_')
-        return f'./tsunami_output_{output_file_name}.json'
+    def __enter__(self):
+        return self
 
-    def _get_target_arg(self):
-        """Select the right argument for tsunami CLI based on the target type"""
-        if self.target_type == 'v4':
-            return f'--ip-v4-target={self.target}'
-        elif self.target_type == 'v6':
-            return f'--ip-v4-target={self.target}'
+    def _make_temp_file(self):
+        """Generate a unique temporary file for the output file.
 
-    def _start_scan(self):
-        """Run a tsunami scan using python subprocess."""
-        logger.info(f'Staring a new scan for {self.target}.')
-        tsunami_command = ["java",
-                           "-cp",
-                           "/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*",
-                           "-Dtsunami-config.location=/usr/tsunami/tsunami.yaml",
-                           "com.google.tsunami.main.cli.TsunamiCli",
-                           "--scan-results-local-output-format=JSON",
-                           f'--scan-results-local-output-filename={self._output_file_name}',
-                           self._get_target_arg()
+        Returns:
+            temporary unique file.
+        """
+        return tempfile.NamedTemporaryFile(suffix='.json', prefix='tsunami', dir='/tmp', )
+
+    def _get_target_arg(self, target: Target):
+        """Select the right argument for tsunami CLI based on the target type.
+
+        Args:
+            target: Target.
+
+        Returns:
+            - argument for tsunami CLi target.
+
+        Raises:
+            - ValueError: the provided  ip version is incorrect.
+        """
+        if target.target_version == 'v4':
+            return f'--ip-v4-target={target.target_address}'
+        elif target.target_version == 'v6':
+            return f'--ip-v4-target={target.target_address}'
+        else:
+            raise ValueError(f'Incorrect ip version {target.target_version}.')
+
+    def _start_scan(self, target, output_file: str):
+        """Run a tsunami scan using python subprocess.
+
+        Args:
+            target:  Target
+            output_file: name of the output.
+        """
+        logger.info('Staring a new scan for %s .', target.target_address)
+        tsunami_command = ['java',
+                           '-cp',
+                           '/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*',
+                           '-Dtsunami-config.location=/usr/tsunami/tsunami.yaml',
+                           'com.google.tsunami.main.cli.TsunamiCli',
+                           '--scan-results-local-output-format=JSON',
+                           f'--scan-results-local-output-filename={output_file}',
+                           self._get_target_arg(target)
                            ]
-        subprocess.run(tsunami_command, encoding='utf-8', stdout=subprocess.PIPE)
+        try:
+            subprocess.run(tsunami_command, encoding='utf-8', stdout=subprocess.DEVNULL, check=True)
+        except subprocess.CalledProcessError as e:
+            raise Exception(e.output) from e
 
-    def _parse_result(self):
+    def _parse_result(self, output_file):
         """After the scan is done, parse the output json file into a dict of the scan Findings.
         returns:
             - scan results.
         """
-        logger.info(f'Scan is done Parsing the results from  {self._output_file_name}.')
-        f = open(self._output_file_name)
-        tsunami_result = json.load(f)
+        logger.info('Scan is done Parsing the results from %s.', output_file.name)
+        tsunami_result = json.load(output_file)
         json_result = {
             'vulnerabilities': []
         }
-        if 'SUCCEEDED' in tsunami_result['scanStatus']:
-            logger.info(f'Scan status: SUCCEEDED')
+        if 'SUCCEEDED' in tsunami_result['scanStatus'] and 'scanFindings' in tsunami_result.keys():
+            json_result['status'] = 'success'
+            logger.info('Scan status: SUCCEEDED')
             for vul in tsunami_result['scanFindings']:
                 # json_result["vulnerabilities"].append(vul['vulnerability'])
-                json_result["vulnerabilities"].append(vul)
-        f.close()
+                json_result['vulnerabilities'].append(vul)
+        else:
+            json_result['status'] = 'failed'
+        output_file.close()
         return json_result
 
-    def scan(self):
+    def scan(self, target: Target):
         """Start a scan, wait for the scan results and clean the scan output.
 
            returns:
-            - scan results.
+            - Scan results from tsunami.
         """
-        self._start_scan()
-        findings = self._parse_result()
-        self._clear_results()
+        output_file = self._make_temp_file()
+        self._start_scan(target, output_file.name)
+        findings = self._parse_result(output_file)
         return findings
 
-    def _clear_results(self):
-        """After a can is done, we delete the output file from the system."""
-        os.remove(self._output_file_name)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self
