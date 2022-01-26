@@ -6,7 +6,7 @@ from ostorlab.agent import message
 from ostorlab.runtimes import definitions as runtime_definitions
 
 from agent import agent
-from tsunami import tsunami
+from agent.tsunami import tsunami
 
 
 def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorException():
