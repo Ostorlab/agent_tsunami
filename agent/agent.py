@@ -35,9 +35,9 @@ class AgentTsunami(agent.Agent):
         else:
             raise ValueError(f'Incorrect ip version {message.data["version"]}')
 
-        target = tsunami.Target(target_address=message.data['host'], target_version=target_type)
+        target = tsunami.Target(address=message.data['host'], version=target_type)
         with tsunami.Tsunami() as tsunami_scanner:
-            scan_result = tsunami_scanner.scan(target)
+            scan_result = tsunami_scanner.scan(target=target)
             logger.info('Scan finished Number of finding %s', len(scan_result['vulnerabilities']))
 
 
