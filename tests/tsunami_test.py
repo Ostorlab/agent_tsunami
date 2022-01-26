@@ -1,18 +1,6 @@
 """Unittests for tsunami class."""
-import json
-import logging
-
-from rich.logging import RichHandler
 
 from agent.tsunami import tsunami
-
-logging.basicConfig(
-    format='%(message)s',
-    datefmt='[%X]',
-    handlers=[RichHandler(rich_tracebacks=True)]
-)
-logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
 
 
 def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(agent_mock, mocker, start_scan_success):
@@ -22,13 +10,13 @@ def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(agent_
     """
 
     mocker.patch('agent.tsunami.tsunami.Tsunami._start_scan', start_scan_success)
-    target = tsunami.Target(target_address='0.0.0.0', target_version='v6')
+    target = tsunami.Target(address='0.0.0.0', version='v6')
 
-    scan_result = tsunami.Tsunami().scan(target)
-
-    assert "vulnerabilities" in scan_result.keys()
-    assert "status" in scan_result.keys()
-    assert 'success' in scan_result['status']
+    with tsunami.Tsunami() as tsunami_scanner:
+        scan_result = tsunami_scanner.scan(target)
+        assert 'vulnerabilities' in scan_result
+        assert 'status' in scan_result
+        assert 'success' in scan_result['status']
 
 
 def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(agent_mock, mocker, start_scan_failed):
@@ -38,10 +26,9 @@ def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(agent_mock, moc
     """
 
     mocker.patch('agent.tsunami.tsunami.Tsunami._start_scan', start_scan_failed)
-    target = tsunami.Target(target_address='0.0.0.0', target_version='v6')
-
-    scan_result = tsunami.Tsunami().scan(target)
-
-    assert "vulnerabilities" in scan_result.keys()
-    assert "status" in scan_result.keys()
-    assert 'failed' in scan_result['status']
+    target = tsunami.Target(address='0.0.0.0', version='v6')
+    with tsunami.Tsunami() as tsunami_scanner:
+        scan_result = tsunami_scanner.scan(target)
+        assert 'vulnerabilities' in scan_result
+        assert 'status' in scan_result
+        assert 'failed' in scan_result['status']

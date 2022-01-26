@@ -1,11 +1,4 @@
-"""
-    Dummy contest.py for template_agent.
-
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    - https://docs.pytest.org/en/stable/fixture.html
-    - https://docs.pytest.org/en/stable/writing_plugins.html
-"""
+"""Setup test config for tsunami agent."""
 
 import json
 
@@ -16,10 +9,10 @@ import pytest
 def start_scan_success(**kwargs):
     def start_scan(self, target, output_file):
         data = {
-            "scanStatus": "SUCCEEDED",
-            "scanFindings": []
+            'scanStatus': 'SUCCEEDED',
+            'scanFindings': []
         }
-        with open(output_file, 'w') as outfile:
+        with open(output_file,'w', encoding='utf-8') as outfile:
             json.dump(data, outfile)
 
     return start_scan
@@ -29,10 +22,10 @@ def start_scan_success(**kwargs):
 def start_scan_failed(**kwargs):
     def start_scan(self, target, output_file):
         data = {
-            "scanStatus": "FAILED",
-            "scanFindings": []
+            'scanStatus': 'FAILED',
+            'scanFindings': []
         }
-        with open(output_file, 'w') as outfile:
+        with open(output_file, 'w', encoding='utf-8') as outfile:
             json.dump(data, outfile)
 
     return start_scan

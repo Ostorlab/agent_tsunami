@@ -10,24 +10,18 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Target:
-    target_address: str
-    target_version: str
+    """Data Class for tsunami target."""
+    address: str
+    version: str
 
 
 class Tsunami:
     """Tsunami wrapper to enable using tsunami scanner from ostorlab agent class."""
-    _output_file: str = ''
+    _output_file = None
 
     def __enter__(self):
+        self._output_file = tempfile.NamedTemporaryFile(suffix='.json', prefix='tsunami', dir='/tmp', )
         return self
-
-    def _make_temp_file(self):
-        """Generate a unique temporary file for the output file.
-
-        Returns:
-            temporary unique file.
-        """
-        return tempfile.NamedTemporaryFile(suffix='.json', prefix='tsunami', dir='/tmp', )
 
     def _get_target_arg(self, target: Target):
         """Select the right argument for tsunami CLI based on the target type.
@@ -41,12 +35,12 @@ class Tsunami:
         Raises:
             - ValueError: the provided  ip version is incorrect.
         """
-        if target.target_version == 'v4':
-            return f'--ip-v4-target={target.target_address}'
-        elif target.target_version == 'v6':
-            return f'--ip-v4-target={target.target_address}'
+        if target.version == 'v4':
+            return f'--ip-v4-target={target.address}'
+        elif target.version == 'v6':
+            return f'--ip-v4-target={target.address}'
         else:
-            raise ValueError(f'Incorrect ip version {target.target_version}.')
+            raise ValueError(f'Incorrect ip version {target.version}.')
 
     def _start_scan(self, target, output_file: str):
         """Run a tsunami scan using python subprocess.
@@ -55,7 +49,7 @@ class Tsunami:
             target:  Target
             output_file: name of the output.
         """
-        logger.info('Staring a new scan for %s .', target.target_address)
+        logger.info('Staring a new scan for %s .', target.address)
         tsunami_command = ['java',
                            '-cp',
                            '/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*',
@@ -65,10 +59,8 @@ class Tsunami:
                            f'--scan-results-local-output-filename={output_file}',
                            self._get_target_arg(target)
                            ]
-        try:
-            subprocess.run(tsunami_command, encoding='utf-8', stdout=subprocess.DEVNULL, check=True)
-        except subprocess.CalledProcessError as e:
-            raise Exception(e.output) from e
+
+        subprocess.run(tsunami_command, encoding='utf-8', stdout=subprocess.DEVNULL, check=True)
 
     def _parse_result(self, output_file):
         """After the scan is done, parse the output json file into a dict of the scan Findings.
@@ -88,7 +80,6 @@ class Tsunami:
                 json_result['vulnerabilities'].append(vul)
         else:
             json_result['status'] = 'failed'
-        output_file.close()
         return json_result
 
     def scan(self, target: Target):
@@ -97,10 +88,10 @@ class Tsunami:
            returns:
             - Scan results from tsunami.
         """
-        output_file = self._make_temp_file()
-        self._start_scan(target, output_file.name)
-        findings = self._parse_result(output_file)
+        self._start_scan(target, self._output_file.name)
+        findings = self._parse_result(self._output_file)
         return findings
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._output_file.close()
         return self
