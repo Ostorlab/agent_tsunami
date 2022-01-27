@@ -76,7 +76,6 @@ class Tsunami:
             json_result['status'] = 'success'
             logger.info('Scan status: SUCCEEDED')
             for vul in tsunami_result['scanFindings']:
-                # json_result["vulnerabilities"].append(vul['vulnerability'])
                 json_result['vulnerabilities'].append(vul)
         else:
             json_result['status'] = 'failed'
