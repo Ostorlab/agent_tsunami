@@ -54,12 +54,12 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     """
 
     data = {
-        "scanStatus": "SUCCEEDED",
-        "vulnerabilities": [
+        'scanStatus': 'SUCCEEDED',
+        'vulnerabilities': [
             {
-                "vulnerability": {
-                    "title": "Ostorlab Platform",
-                    "description": "Ostorlab is not password protected"
+                'vulnerability': {
+                    'title': 'Ostorlab Platform',
+                    'description': 'Ostorlab is not password protected'
                 }
             }
         ]
@@ -68,7 +68,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     risk_rating = 'HIGH'
     description = 'Ostorlab is not password protected'
     kb_entry =  kb.Entry(
-                        title="Ostorlab Platform",
+                        title='Ostorlab Platform',
                         risk_rating=risk_rating,
                         short_description=description,
                         description=description,
