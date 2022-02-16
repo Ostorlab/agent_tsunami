@@ -67,4 +67,4 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
 if __name__ == '__main__':
     logger.info('Starting Tsunami agent...')
     AgentTsunami.main()
-    
+
