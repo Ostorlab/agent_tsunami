@@ -1,8 +1,6 @@
 """Unittests for agent."""
 
-from py import process
 import pytest
-import json
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent import message
 from ostorlab.runtimes import definitions as runtime_definitions
@@ -95,7 +93,6 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
 
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry, technical_detail=f'```json\n{data}\n```', risk_rating=risk_rating)
-
 
 
 
