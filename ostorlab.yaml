@@ -1,6 +1,6 @@
 kind: Agent
 name: tsunami
-version: 0.0.1
+version: 0.0.2
 description: "Tsunami is a general purpose network security scanner with an extensible plugin system for detecting high severity vulnerabilities with high confidence."
 in_selectors:
   - v3.asset.ip
