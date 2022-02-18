@@ -7,7 +7,7 @@ from ostorlab.agent.mixins import agent_report_vulnerability_mixin
 from ostorlab.agent.kb import kb
 from rich import logging as rich_logging
 
-from agent.tsunami import tsunami
+from tsunami import tsunami
 
 logging.basicConfig(
     format='%(message)s',
