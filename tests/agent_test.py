@@ -6,7 +6,7 @@ from ostorlab.agent import message
 from ostorlab.runtimes import definitions as runtime_definitions
 from ostorlab.agent.kb import kb
 
-from agent import agent
+from agent import tsunami_agent
 from agent.tsunami import tsunami
 
 
@@ -19,7 +19,7 @@ def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorExcept
     msg = message.Message.from_data(selector='v3.asset.ip', data={'version': 15631, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
-    test_agent = agent.AgentTsunami(definition, settings)
+    test_agent = tsunami_agent.AgentTsunami(definition, settings)
 
     with pytest.raises(ValueError):
         test_agent.process(msg)
@@ -36,7 +36,7 @@ def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mock
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
     target = tsunami.Target(address='0.0.0.0', version='v4')
-    test_agent = agent.AgentTsunami(definition, settings)
+    test_agent = tsunami_agent.AgentTsunami(definition, settings)
 
     test_agent.process(msg)
 
@@ -87,7 +87,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
     tsunami.Target(address='0.0.0.0', version='v4')
-    test_agent = agent.AgentTsunami(definition, settings)
+    test_agent = tsunami_agent.AgentTsunami(definition, settings)
 
     test_agent.process(msg)
 
