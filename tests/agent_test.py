@@ -81,7 +81,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
                     )
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
-    mock_report_vulnerability = mocker.patch('agent.agent.AgentTsunami.report_vulnerability', return_value=None)
+    mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
 
     msg = message.Message.from_data(selector='v3.asset.ip', data={'version': 4, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
