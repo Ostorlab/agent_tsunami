@@ -39,7 +39,8 @@ RUN mkdir -p /usr/tsunami/logs
 COPY --from=builder /install /usr/local
 
 RUN mkdir -p /app/agent
+ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app/agent
-CMD ["python3", "/app/agent/agent.py"]
+CMD ["python3", "/app/agent/tsunami_agent.py"]
