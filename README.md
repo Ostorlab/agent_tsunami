@@ -1,6 +1,6 @@
 
 # Tsunami agent  
-An implementation of [Osorlab Agent]((https://pypi.org/project/ostorlab/) for the [Tsunami scanner](https://github.com/google/tsunami-security-scanner) by Google.  
+An implementation of [Osorlab Agent](https://pypi.org/project/ostorlab/) for the [Tsunami scanner](https://github.com/google/tsunami-security-scanner) by Google.  
 
 ## Usage
 
