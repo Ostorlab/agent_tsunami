@@ -28,7 +28,7 @@ For more information, please refer to the [Ostorlab Documentation](https://githu
 
 ## Usage
 
-Agent Tsunami can be installed directly from the ostorlab agent store or built from the repository.
+Agent Tsunami can be installed directly from the ostorlab agent store or built from this repository.
 
  ### Install directly from ostorlab agent store
 
@@ -56,7 +56,6 @@ You can then run the agent with the following command:
  4. Run the agent using on of the following commands:
 	 * If you did not specify an organization when building the image: `ostorlab scan run --agents agent//tsunami ip 8.8.8.8`
 	 * If you specified an organization when building the image: `ostorlab scan run --agents agent/[ORGANIZATION]/tsunami ip 8.8.8.8`
-
 
 
 ### License
