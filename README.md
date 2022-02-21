@@ -58,6 +58,6 @@ You can then run the agent with the following command:
 	 * If you specified an organization when building the image: `ostorlab scan run --agents agent/[ORGANIZATION]/tsunami ip 8.8.8.8`
 
 
-### License
+## License
 [Apache](./LICENSE)
 
