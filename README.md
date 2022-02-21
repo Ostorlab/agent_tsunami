@@ -22,7 +22,7 @@ This repository is an implementation of [Ostorlab Agent](https://pypi.org/projec
 To perform your first scan, simply run the following command.
 `ostorlab scan run --install --agents agent/ostorlab/tsunami ip 8.8.8.8`
 
-This command will download and install `agent/ostorlab/tsunami` and target the ip `8.8.8.8`
+This command will download and install `agent/ostorlab/tsunami` and target the ip `8.8.8.8`.
 For more information, please refer to the [Ostorlab Documentation](https://github.com/Ostorlab/ostorlab/blob/main/README.md)
 
 
@@ -50,7 +50,7 @@ You can then run the agent with the following command:
 
  3. Build the agent image using ostorlab cli.
 
- `ostortlab agent build --file=ostorlab.yaml`
+ `ostortlab agent build --file=ostorlab.yaml`.
  You can pass the optional flag `--organization` to specify your organisation. The organization is empty by default.
 
  4. Run the agent using on of the following commands:
