@@ -16,14 +16,26 @@ _Tsunami is a general purpose network security scanner with an extensible plugin
 <img src="./agent_tsunami.png" alt="agent-tsunami" />
 </p>
 
-An implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [Tsunami Scanner](https://github.com/google/tsunami-security-scanner) by Google.
+This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [Tsunami Scanner](https://github.com/google/tsunami-security-scanner) by Google.
+
+## Getting Started
+To perform your first scan, simply run the following command.
+`ostorlab scan run --install --agents agent/ostorlab/tsunami ip 8.8.8.8`
+
+This command will download and install `agent/ostorlab/tsunami` and target the ip `8.8.8.8`
+For more information, please refer to the [Ostorlab Documentation](https://github.com/Ostorlab/ostorlab/blob/main/README.md)
+
 
 ## Usage
-Refer to the [Ostorlab Documentation](https://github.com/Ostorlab/ostorlab/blob/main/README.md)
+
+Agent Tsunami can be installed directly from the ostorlab agent store or built from the repository.
 
  ### Install directly from ostorlab agent store
 
  `ostorlab agent install agent/ostorlab/tsunami`
+
+You can then run the agent with the following command:
+`ostorlab scan run --agents agent/ostorlab/tsunami ip 8.8.8.8`
 
 
 ### Build directly from the repository
@@ -39,13 +51,20 @@ Refer to the [Ostorlab Documentation](https://github.com/Ostorlab/ostorlab/blob/
  3. Build the agent image using ostorlab cli.
 
  `ostortlab agent build --file=ostorlab.yaml`
+ You can pass the optional flag `--organization` to specify your organisation. The organization is empty by default.
+
+ 4. Run the agent using on of the following commands:
+	 * If you did not specify an organization when building the image: `ostorlab scan run --agents agent//tsunami ip 8.8.8.8`
+	 * If you specified an organization when building the image: `ostorlab scan run --agents agent/[ORGANIZATION]/tsunami ip 8.8.8.8`
+
 
 
 ## Contributing
 
 ### Contributing Guide
 
-Before making any pull request, please make sure to read the [Contributing Guide](#) to learn about our development process and how to propose bugfixes and improvements.
+Please make a pull request if you would like to propose bugfixes and improvements.
 
 ### License
 [Apache](./LICENSE)
+
