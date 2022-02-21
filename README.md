@@ -59,12 +59,6 @@ You can then run the agent with the following command:
 
 
 
-## Contributing
-
-### Contributing Guide
-
-Please make a pull request if you would like to propose bugfixes and improvements.
-
 ### License
 [Apache](./LICENSE)
 
