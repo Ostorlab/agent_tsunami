@@ -16,7 +16,7 @@ def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorExcept
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
     """
     # providing invalid version
-    msg = message.Message.from_data(selector='v3.asset.ip', data={'version': 15631, 'host': '0.0.0.0'})
+    msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 15631, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
     test_agent = tsunami_agent.AgentTsunami(definition, settings)
@@ -32,7 +32,7 @@ def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mock
     """
 
     mock_tsunami_scan = mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value={'target': 0})
-    msg = message.Message.from_data(selector='v3.asset.ip', data={'version': 4, 'host': '0.0.0.0'})
+    msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
     target = tsunami.Target(address='0.0.0.0', version='v4')
@@ -83,7 +83,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
     mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
 
-    msg = message.Message.from_data(selector='v3.asset.ip', data={'version': 4, 'host': '0.0.0.0'})
+    msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
     tsunami.Target(address='0.0.0.0', version='v4')
