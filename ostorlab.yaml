@@ -1,6 +1,6 @@
 kind: Agent
 name: tsunami
-version: 0.0.5
+version: 0.0.6
 image: images/logo.png 
 description: |
   This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [Tsunami Scanner](https://github.com/google/tsunami-security-scanner) by Google.
