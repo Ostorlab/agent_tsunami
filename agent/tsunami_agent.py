@@ -12,7 +12,8 @@ from agent.tsunami import tsunami
 logging.basicConfig(
     format='%(message)s',
     datefmt='[%X]',
-    handlers=[rich_logging.RichHandler(rich_tracebacks=True)]
+    handlers=[rich_logging.RichHandler(rich_tracebacks=True)],
+    level='INFO'
 )
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         Args:
             message:  The message to process from ostorlab runtime."""
 
-        logger.info('Received a new message, processing...')
+        logger.info('processing message of selector : %s', message.selector)
         if message.data['version'] == 6:
             target_type = 'v6'
         elif message.data['version'] == 4:
@@ -61,10 +62,9 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                     ),
                     technical_detail=f'```json\n{scan_result}\n```',
                     risk_rating=risk_rating)
-            logger.info('Scan finished Number of finding %s', len(scan_result['vulnerabilities']))
 
 
 if __name__ == '__main__':
-    logger.info('Starting Tsunami agent...')
+    logger.info('starting agent..')
     AgentTsunami.main()
 
