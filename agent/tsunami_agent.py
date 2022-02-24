@@ -42,7 +42,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         with tsunami.Tsunami() as tsunami_scanner:
             scan_result = tsunami_scanner.scan(target=target)
 
-
+            logger.info('found %d vulnerabilities', len(scan_result))
             for vulnerability in scan_result['vulnerabilities']:
                 # risk_rating will be HIGH for all detected vulnerabilities
                 risk_rating = 'HIGH'
@@ -52,20 +52,21 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                         risk_rating=risk_rating,
                         short_description=vulnerability['vulnerability']['description'],
                         description=vulnerability['vulnerability']['description'],
-                        recommendation = '',
-                        references = {},
-                        security_issue = True,
-                        privacy_issue = False,
-                        has_public_exploit = True,
-                        targeted_by_malware = True,
-                        targeted_by_ransomware = True,
-                        targeted_by_nation_state = True
+                        recommendation='',
+                        references={},
+                        security_issue=True,
+                        privacy_issue=False,
+                        has_public_exploit=True,
+                        targeted_by_malware=True,
+                        targeted_by_ransomware=True,
+                        targeted_by_nation_state=True
                     ),
                     technical_detail=f'```json\n{scan_result}\n```',
-                    risk_rating=risk_rating)
+                    risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+
+        logger.info('done processing the message')
 
 
 if __name__ == '__main__':
     logger.info('starting agent..')
     AgentTsunami.main()
-

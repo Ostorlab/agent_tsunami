@@ -5,6 +5,7 @@ from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent import message
 from ostorlab.runtimes import definitions as runtime_definitions
 from ostorlab.agent.kb import kb
+from ostorlab.agent.mixins import agent_report_vulnerability_mixin
 
 from agent import tsunami_agent
 from agent.tsunami import tsunami
@@ -93,7 +94,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
 
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
-        technical_detail=f'```json\n{data}\n```', risk_rating=risk_rating)
+        technical_detail=f'```json\n{data}\n```', risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
 
 
