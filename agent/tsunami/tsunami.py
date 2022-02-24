@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +50,7 @@ class Tsunami:
             target:  Target
             output_file: name of the output.
         """
-        logger.info('Staring a new scan for %s .', target.address)
+        logger.info('staring a new scan for %s .', target.address)
         tsunami_command = ['java',
                            '-cp',
                            '/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*',
@@ -67,14 +68,14 @@ class Tsunami:
         returns:
             - scan results.
         """
-        logger.info('Scan is done Parsing the results from %s.', output_file.name)
+        logger.info('scan is done, parsing the results from %s.', output_file.name)
         tsunami_result = json.load(output_file)
         json_result = {
             'vulnerabilities': []
         }
         if 'SUCCEEDED' in tsunami_result['scanStatus'] and 'scanFindings' in tsunami_result.keys():
             json_result['status'] = 'success'
-            logger.info('Scan status: SUCCEEDED')
+            logger.info('scan status: SUCCEEDED')
             for vul in tsunami_result['scanFindings']:
                 json_result['vulnerabilities'].append(vul)
         else:
