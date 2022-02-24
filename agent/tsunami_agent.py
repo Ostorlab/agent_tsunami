@@ -42,7 +42,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         with tsunami.Tsunami() as tsunami_scanner:
             scan_result = tsunami_scanner.scan(target=target)
 
-
+            logger.info('found %d vulnerabilities', len(scan_result))
             for vulnerability in scan_result['vulnerabilities']:
                 # risk_rating will be HIGH for all detected vulnerabilities
                 risk_rating = 'HIGH'
@@ -63,6 +63,8 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                     ),
                     technical_detail=f'```json\n{scan_result}\n```',
                     risk_rating=risk_rating)
+
+        logger.info('done processing the message')
 
 
 if __name__ == '__main__':
