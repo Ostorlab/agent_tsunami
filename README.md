@@ -76,5 +76,5 @@ git clone https://github.com/Ostorlab/agent_tsunami.git && cd agent_tsunami
 
 
 ## License
-[Apache](./LICENSE)
+[Apache-2](./LICENSE)
 
