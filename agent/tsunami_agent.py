@@ -52,17 +52,17 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                         risk_rating=risk_rating,
                         short_description=vulnerability['vulnerability']['description'],
                         description=vulnerability['vulnerability']['description'],
-                        recommendation = '',
-                        references = {},
-                        security_issue = True,
-                        privacy_issue = False,
-                        has_public_exploit = True,
-                        targeted_by_malware = True,
-                        targeted_by_ransomware = True,
-                        targeted_by_nation_state = True
+                        recommendation='',
+                        references={},
+                        security_issue=True,
+                        privacy_issue=False,
+                        has_public_exploit=True,
+                        targeted_by_malware=True,
+                        targeted_by_ransomware=True,
+                        targeted_by_nation_state=True
                     ),
                     technical_detail=f'```json\n{scan_result}\n```',
-                    risk_rating=risk_rating)
+                    risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
         logger.info('done processing the message')
 
@@ -70,4 +70,3 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
 if __name__ == '__main__':
     logger.info('starting agent..')
     AgentTsunami.main()
-
