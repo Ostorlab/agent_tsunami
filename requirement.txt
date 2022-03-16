@@ -1,1 +1,1 @@
-ostorlab
+ostorlab[agent]
