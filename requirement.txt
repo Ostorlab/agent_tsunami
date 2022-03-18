@@ -1,1 +1,2 @@
-ostorlab
+ostorlab[agent]
+rich
