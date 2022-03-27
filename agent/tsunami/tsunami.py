@@ -14,6 +14,7 @@ class Target:
     """Data Class for tsunami target."""
     address: str
     version: str
+    domain: str
 
 
 class Tsunami:
@@ -36,12 +37,17 @@ class Tsunami:
         Raises:
             - ValueError: the provided  ip version is incorrect.
         """
-        if target.version == 'v4':
-            return f'--ip-v4-target={target.address}'
-        elif target.version == 'v6':
-            return f'--ip-v4-target={target.address}'
+        if target.address is not None:
+            if target.version == 'v4':
+                return f'--ip-v4-target={target.address}'
+            elif target.version == 'v6':
+                return f'--ip-v4-target={target.address}'
+            else:
+                raise ValueError(f'Incorrect ip version {target.version}.')
+        elif target.domain is not None:
+            return f'--hostname-target={target.domain}'
         else:
-            raise ValueError(f'Incorrect ip version {target.version}.')
+            raise ValueError('Could not find any target.')
 
     def _start_scan(self, target, output_file: str):
         """Run a tsunami scan using python subprocess.
@@ -50,7 +56,9 @@ class Tsunami:
             target:  Target
             output_file: name of the output.
         """
+
         logger.info('staring a new scan for %s .', target.address)
+
         tsunami_command = ['java',
                            '-cp',
                            '/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*',

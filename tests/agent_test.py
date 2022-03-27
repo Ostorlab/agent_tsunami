@@ -36,7 +36,7 @@ def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mock
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
-    target = tsunami.Target(address='0.0.0.0', version='v4')
+    target = tsunami.Target(address='0.0.0.0', version='v4', domain=None)
     test_agent = tsunami_agent.AgentTsunami(definition, settings)
 
     test_agent.process(msg)
@@ -87,7 +87,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0'})
     definition = agent_definitions.AgentDefinition(name='start_test_agent', out_selectors=['v3.report.vulnerability'])
     settings = runtime_definitions.AgentSettings(key='agent/ostorlab/tsunami_agent')
-    tsunami.Target(address='0.0.0.0', version='v4')
+    tsunami.Target(address='0.0.0.0', version='v4', domain=None)
     test_agent = tsunami_agent.AgentTsunami(definition, settings)
 
     test_agent.process(msg)
