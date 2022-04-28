@@ -29,7 +29,7 @@ def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(agent_
     """
 
     mocker.patch('agent.tsunami.tsunami.Tsunami._start_scan', _start_scan_success)
-    target = tsunami.Target(address='0.0.0.0', version='v6')
+    target = tsunami.Target(address='0.0.0.0', version='v6', domain=None)
 
     with tsunami.Tsunami() as tsunami_scanner:
         scan_result = tsunami_scanner.scan(target)
@@ -45,7 +45,7 @@ def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(agent_mock, moc
     """
 
     mocker.patch('agent.tsunami.tsunami.Tsunami._start_scan', _start_scan_failed)
-    target = tsunami.Target(address='0.0.0.0', version='v6')
+    target = tsunami.Target(address='0.0.0.0', version='v6', domain=None)
     with tsunami.Tsunami() as tsunami_scanner:
         scan_result = tsunami_scanner.scan(target)
         assert 'vulnerabilities' in scan_result

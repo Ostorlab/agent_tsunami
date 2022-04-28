@@ -24,7 +24,6 @@ def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mock
         Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
     """
-
     mock_tsunami_scan = mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value={'target': 0})
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0'})
     target = tsunami.Target(address='0.0.0.0', version='v4')
@@ -53,7 +52,6 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
             }
         ]
     }
-
     risk_rating = 'HIGH'
     description = 'Ostorlab is not password protected'
     kb_entry =  kb.Entry(
@@ -73,7 +71,6 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
     mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
-
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0'})
     tsunami.Target(address='0.0.0.0', version='v4')
 

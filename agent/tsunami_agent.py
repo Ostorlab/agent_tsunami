@@ -31,19 +31,22 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
             message:  The message to process from ostorlab runtime."""
 
         logger.info('processing message of selector : %s', message.selector)
-        if message.data['version'] == 6:
-            target_type = 'v6'
-        elif message.data['version'] == 4:
-            target_type = 'v4'
+        if message.data.get('host'):
+            if message.data['version'] == 6:
+                target_type = 'v6'
+            elif message.data['version'] == 4:
+                target_type = 'v4'
+            else:
+                raise ValueError(f'Incorrect ip version {message.data["version"]}')
         else:
-            raise ValueError(f'Incorrect ip version {message.data["version"]}')
+            target_type = None
 
-        target = tsunami.Target(address=message.data['host'], version=target_type)
+        target = tsunami.Target(address=message.data.get('host'), version=target_type, domain=message.data.get('name'))
         with tsunami.Tsunami() as tsunami_scanner:
             scan_result = tsunami_scanner.scan(target=target)
 
-            logger.info('found %d vulnerabilities', len(scan_result))
-            for vulnerability in scan_result['vulnerabilities']:
+            logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
+            for vulnerability in scan_result.get('vulnerabilities', []):
                 # risk_rating will be HIGH for all detected vulnerabilities
                 risk_rating = 'HIGH'
                 self.report_vulnerability(
