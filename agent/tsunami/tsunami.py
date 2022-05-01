@@ -4,6 +4,7 @@ import logging
 import subprocess
 import tempfile
 from dataclasses import dataclass
+from typing import Optional
 
 
 logger = logging.getLogger(__name__)
@@ -12,9 +13,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Target:
     """Data Class for tsunami target."""
-    address: str
-    version: str
-    domain: str
+    address: Optional[str] = None
+    version: Optional[str] = None
+    domain: Optional[str] = None
 
 
 class Tsunami:
