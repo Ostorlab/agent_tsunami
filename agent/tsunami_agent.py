@@ -1,5 +1,6 @@
 """Agent implementation for tsunami scanner."""
 import logging
+from urllib import parse
 
 from ostorlab.agent import agent
 from ostorlab.agent.message import message as msg
@@ -41,7 +42,9 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         else:
             target_type = None
 
-        target = tsunami.Target(address=message.data.get('host'), version=target_type, domain=message.data.get('name'))
+        domain_name = self._prepare_domain_name(message.data.get('name'), message.data.get('url'))
+
+        target = tsunami.Target(address=message.data.get('host'), version=target_type, domain=domain_name)
         with tsunami.Tsunami() as tsunami_scanner:
             scan_result = tsunami_scanner.scan(target=target)
 
@@ -68,6 +71,13 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                     risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
         logger.info('done processing the message')
+
+    def _prepare_domain_name(self, domain_name, url):
+        """Prepare domain name based on type, if a url is provided, return its domain."""
+        if domain_name is not None:
+            return domain_name
+        elif url is not None:
+            return parse.urlparse(url).netloc
 
 
 if __name__ == '__main__':
