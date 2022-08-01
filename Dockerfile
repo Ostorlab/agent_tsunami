@@ -22,7 +22,7 @@ RUN ./gradlew shadowJar \
     && cp ./tsunami.yaml /usr/tsunami
 
 #Stage 2.
-FROM python:3.8-slim-buster as base
+FROM python:3.10-slim-buster as base
 FROM base as builder
 RUN mkdir /install
 WORKDIR /install
