@@ -136,13 +136,3 @@ def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(tsunami_a
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0', 'mask': '28'})
     tsunami_agent.process(msg)
     assert tsunami_scan_mocker.call_count == 14
-
-
-def testTsunamiAgent_WhenMessageIsInvalidIpAddress_ShouldRaiseError(tsunami_agent, mocker):
-    """Test Tsunami agent when receiving a message with invalid ip.
-        Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
-        should have a valid ip, other-ways the agent should raise a ValueError exception.
-    """
-    msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0.4', 'mask': '32'})
-    with pytest.raises(ValueError):
-        tsunami_agent.process(msg)

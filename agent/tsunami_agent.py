@@ -50,7 +50,7 @@ def _prepare_targets(message) -> List[tsunami.Target]:
             return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()]
         except ValueError:
             logger.info("Incorrect %s / %s", {message.data.get('host')}, {message.data.get('mask')})
-
+            return []
 
 class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin):
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
