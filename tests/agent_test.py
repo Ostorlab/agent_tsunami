@@ -143,7 +143,6 @@ def testTsunamiAgent_WhenMessageIsInvalidIpAddress_ShouldRaiseError(tsunami_agen
         Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip, other-ways the agent should raise a ValueError exception.
     """
-    tsunami_scan_mocker = mocker.patch('agent.tsunami.tsunami.Tsunami.scan')
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0.4', 'mask': '32'})
     with pytest.raises(ValueError):
         tsunami_agent.process(msg)
