@@ -58,15 +58,11 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
     For more visit https://github.com/Ostorlab/ostorlab."""
 
-    def _check_asset_was_added(self, target) -> bool:
+    def _check_asset_was_added(self, targets) -> bool:
         """Check if the asset was scanned before or not"""
-        if target.address is not None:
-            if self.set_add('agent_wappalyzer_asset', f'{target.address}'):
-                logger.info('target %s/ was processed before, exiting', target.address)
-                return False
-        if target.domain is not None:
-            if self.set_add(b'agent_wappalyzer_asset', f'{target.domain}'):
-                logger.info('target %s/ was processed before, exiting', target.domain)
+        if targets.domain is not None:
+            if self.set_add(b'agent_wappalyzer_asset', f'{targets.domain}'):
+                logger.info('target %s/ was processed before, exiting', targets.domain)
                 return False
         return True
 
@@ -79,9 +75,21 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
 
         logger.info('processing message of selector : %s', message.selector)
         targets = _prepare_targets(message=message)
+        if message.data.get('host') is not None:
+            host = message.data.get('host')
+            mask = message.data.get('mask')
+            if mask is not None:
+                addresses = ipaddress.ip_network(f'{host}/{mask}')
+            else:
+                addresses = ipaddress.ip_network(f'{host}')
+            if not self.add_ip_network('agent_whois_ip_asset', addresses):
+                logger.info('target %s was processed before, exiting', addresses)
+                return
+
         for target in targets:
-            if self._check_asset_was_added(target) is True:
-                continue
+            if target.domain is not None:
+                if self._check_asset_was_added(target) is True:
+                    return
             with tsunami.Tsunami() as tsunami_scanner:
                 scan_result = tsunami_scanner.scan(target=target)
                 logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
