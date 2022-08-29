@@ -1,12 +1,13 @@
 """Agent implementation for tsunami scanner."""
 import ipaddress
 import logging
-from typing import List
+from typing import List, Union
 from urllib import parse
 
 from ostorlab.agent import agent
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as msg
+from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
 from rich import logging as rich_logging
 
@@ -22,18 +23,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _prepare_domain_name(domain_name, url):
+def _prepare_domain_name(message: msg.Message) -> Union[str, None]:
     """Prepare domain name based on type, if url is provided, return its domain."""
-    if domain_name is not None:
-        return domain_name
-    elif url is not None:
-        return parse.urlparse(url).netloc
+    if message.data.get('name') is not None:
+        return message.data.get('name')
+    elif message.data.get('url') is not None:
+        return parse.urlparse(message.data.get('url')).netloc
 
 
 def _prepare_targets(message) -> List[tsunami.Target]:
-    domain_name = _prepare_domain_name(message.data.get('name'), message.data.get('url'))
-    if domain_name is not None:
-        return [tsunami.Target(domain=domain_name)]
+    """Prepare Targets and dispatch it to prepare domain/url or host"""
+    if _prepare_domain_name(message) is not None:
+        return [tsunami.Target(domain=_prepare_domain_name(message))]
     if message.data.get('host') is not None:
         version = message.data['version']
         if version == 6:
@@ -52,6 +53,20 @@ def _prepare_targets(message) -> List[tsunami.Target]:
             logger.info("Incorrect %s / %s", {message.data.get('host')}, {message.data.get('mask')})
             return []
 
+
+def _check_asset_was_added(target) -> bool:
+    """Check if the asset was scanned before or not"""
+    if target.address is not None:
+        if not persist_mixin.AgentPersistMixin.set_add(b'agent_wappalyzer_asset', f'{target.address}'):
+            logger.info('target %s/ was processed before, exiting', target.address)
+            return True
+    if target.domain is not None:
+        if not persist_mixin.AgentPersistMixin.set_add(b'agent_wappalyzer_asset', f'{target.domain}'):
+            logger.info('target %s/ was processed before, exiting', target.domain)
+            return True
+    return False
+
+
 class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin):
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
     For more visit https://github.com/Ostorlab/ostorlab."""
@@ -66,6 +81,8 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         logger.info('processing message of selector : %s', message.selector)
         targets = _prepare_targets(message=message)
         for target in targets:
+            if _check_asset_was_added(target) is True:
+                return
             with tsunami.Tsunami() as tsunami_scanner:
                 scan_result = tsunami_scanner.scan(target=target)
                 logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
