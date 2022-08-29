@@ -50,7 +50,7 @@ def _prepare_targets(message) -> List[tsunami.Target]:
                 ip_network = ipaddress.ip_network(f"""{message.data.get('host')}/{message.data.get('mask')}""")
             return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()]
         except ValueError:
-            logger.info("Incorrect %s / %s", {message.data.get('host')}, {message.data.get('mask')})
+            logger.info('Incorrect %s / %s', {message.data.get('host')}, {message.data.get('mask')})
             return []
 
 
