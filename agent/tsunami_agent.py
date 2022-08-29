@@ -54,22 +54,21 @@ def _prepare_targets(message) -> List[tsunami.Target]:
             return []
 
 
-def _check_asset_was_added(target) -> bool:
-    """Check if the asset was scanned before or not"""
-    if target.address is not None:
-        if not persist_mixin.AgentPersistMixin.set_add(b'agent_wappalyzer_asset', f'{target.address}'):
-            logger.info('target %s/ was processed before, exiting', target.address)
-            return True
-    if target.domain is not None:
-        if not persist_mixin.AgentPersistMixin.set_add(b'agent_wappalyzer_asset', f'{target.domain}'):
-            logger.info('target %s/ was processed before, exiting', target.domain)
-            return True
-    return False
-
-
-class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin):
+class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin, persist_mixin.AgentPersistMixin):
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
     For more visit https://github.com/Ostorlab/ostorlab."""
+
+    def _check_asset_was_added(self, target) -> bool:
+        """Check if the asset was scanned before or not"""
+        if target.address is not None:
+            if self.set_add('agent_wappalyzer_asset', f'{target.address}'):
+                logger.info('target %s/ was processed before, exiting', target.address)
+                return False
+        if target.domain is not None:
+            if self.set_add(b'agent_wappalyzer_asset', f'{target.domain}'):
+                logger.info('target %s/ was processed before, exiting', target.domain)
+                return False
+        return True
 
     def process(self, message: msg.Message) -> None:
         """Starts a tsunami scan, wait for the scan to finish,
@@ -81,8 +80,8 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         logger.info('processing message of selector : %s', message.selector)
         targets = _prepare_targets(message=message)
         for target in targets:
-            if _check_asset_was_added(target) is True:
-                return
+            if self._check_asset_was_added(target) is True:
+                continue
             with tsunami.Tsunami() as tsunami_scanner:
                 scan_result = tsunami_scanner.scan(target=target)
                 logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
