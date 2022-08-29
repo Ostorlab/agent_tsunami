@@ -54,20 +54,20 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     }
     risk_rating = 'HIGH'
     description = 'Ostorlab is not password protected'
-    kb_entry =  kb.Entry(
-                        title='Ostorlab Platform',
-                        risk_rating=risk_rating,
-                        short_description=description,
-                        description=description,
-                        recommendation = '',
-                        references = {},
-                        security_issue = True,
-                        privacy_issue = False,
-                        has_public_exploit = True,
-                        targeted_by_malware = True,
-                        targeted_by_ransomware = True,
-                        targeted_by_nation_state = True
-                    )
+    kb_entry = kb.Entry(
+        title='Ostorlab Platform',
+        risk_rating=risk_rating,
+        short_description=description,
+        description=description,
+        recommendation='',
+        references={},
+        security_issue=True,
+        privacy_issue=False,
+        has_public_exploit=True,
+        targeted_by_malware=True,
+        targeted_by_ransomware=True,
+        targeted_by_nation_state=True
+    )
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
     mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
@@ -77,7 +77,8 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     tsunami_agent.process(msg)
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
-        technical_detail=f'```json\n{data}\n```', risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                                                      technical_detail=f'```json\n{data}\n```',
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
 
 def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(mocker, tsunami_agent):
@@ -99,20 +100,20 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
     }
     risk_rating = 'HIGH'
     description = 'Ostorlab is not password protected'
-    kb_entry =  kb.Entry(
-                        title='Ostorlab Platform',
-                        risk_rating=risk_rating,
-                        short_description=description,
-                        description=description,
-                        recommendation = '',
-                        references = {},
-                        security_issue = True,
-                        privacy_issue = False,
-                        has_public_exploit = True,
-                        targeted_by_malware = True,
-                        targeted_by_ransomware = True,
-                        targeted_by_nation_state = True
-                    )
+    kb_entry = kb.Entry(
+        title='Ostorlab Platform',
+        risk_rating=risk_rating,
+        short_description=description,
+        description=description,
+        recommendation='',
+        references={},
+        security_issue=True,
+        privacy_issue=False,
+        has_public_exploit=True,
+        targeted_by_malware=True,
+        targeted_by_ransomware=True,
+        targeted_by_nation_state=True
+    )
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
     mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
@@ -123,4 +124,15 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
     tsunami_agent.process(msg)
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
-        technical_detail=f'```json\n{data}\n```', risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                                                      technical_detail=f'```json\n{data}\n```',
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+
+
+def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(tsunami_agent, mocker):
+    """Test Tsunami agent when receiving a message with ip range.
+        should run tsunami on all the hosts in the ip range.
+    """
+    tsunami_scan_mocker = mocker.patch('agent.tsunami.tsunami.Tsunami.scan')
+    msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0', 'mask': '28'})
+    tsunami_agent.process(msg)
+    assert tsunami_scan_mocker.call_count == 14
