@@ -15,6 +15,7 @@ def fixture_tsunami_agent(agent_mock, agent_persist_mock):
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         settings = runtime_definitions.AgentSettings(
             key='agent/ostorlab/tsunami',
+            redis_url='redis://guest:guest@localhost:6379'
         )
 
         agent = tsunami_agent.AgentTsunami(definition, settings)
