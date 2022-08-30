@@ -9,6 +9,8 @@ from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as msg
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
+from ostorlab.agent import definitions as agent_definitions
+from ostorlab.runtimes import definitions as runtime_definitions
 from rich import logging as rich_logging
 
 from agent.tsunami import tsunami
@@ -57,6 +59,13 @@ def _prepare_targets(message) -> List[tsunami.Target]:
 class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin, persist_mixin.AgentPersistMixin):
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
     For more visit https://github.com/Ostorlab/ostorlab."""
+
+    def __init__(self,
+                 agent_definition: agent_definitions.AgentDefinition,
+                 agent_settings: runtime_definitions.AgentSettings
+                ) -> None:
+        super().__init__(agent_definition, agent_settings)
+        persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
 
     def _check_asset_was_added(self, targets) -> bool:
         """Check if the asset was scanned before or not"""
