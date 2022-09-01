@@ -1,7 +1,7 @@
 """Unittests for agent."""
 
 import pytest
-from ostorlab.agent import message
+from ostorlab.agent.message import message
 from ostorlab.agent.kb import kb
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
 
