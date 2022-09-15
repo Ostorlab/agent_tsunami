@@ -70,7 +70,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
     def _check_asset_was_added(self, targets) -> bool:
         """Check if the asset was scanned before or not"""
         if targets.domain is not None:
-            if self.set_add(b'agent_wappalyzer_asset', f'{targets.domain}'):
+            if self.set_add(b'agent_tsunami', f'{targets.domain}'):
                 logger.info('target %s/ was processed before, exiting', targets.domain)
                 return False
         return True
@@ -91,7 +91,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 addresses = ipaddress.ip_network(f'{host}/{mask}')
             else:
                 addresses = ipaddress.ip_network(f'{host}')
-            if not self.add_ip_network('agent_whois_ip_asset', addresses):
+            if not self.add_ip_network('agent_tsunami', addresses):
                 logger.info('target %s was processed before, exiting', addresses)
                 return
 
