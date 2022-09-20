@@ -4,11 +4,14 @@ import pytest
 from ostorlab.agent.message import message
 from ostorlab.agent.kb import kb
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
+from pytest_mock import plugin
 
 from agent.tsunami import tsunami
+from agent import tsunami_agent as ts_agt
 
 
-def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorException(tsunami_agent):
+def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorException(
+        tsunami_agent: ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when receiving a message with invalid ip version.
         Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
@@ -19,7 +22,8 @@ def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorExcept
         tsunami_agent.process(msg)
 
 
-def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mocker, tsunami_agent):
+def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mocker: plugin.MockerFixture,
+                                                                            tsunami_agent: ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when receiving a message with invalid ip version.
         Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
@@ -35,7 +39,9 @@ def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mock
     assert mock_tsunami_scan.call_args.kwargs['target'].version == target.version
 
 
-def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(mocker, tsunami_agent):
+def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
+        mocker: plugin.MockerFixture,
+        tsunami_agent: ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when vulnerabilities are detected.
         Tsunami supports ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
@@ -81,7 +87,9 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
                                                       risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
 
-def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(mocker, tsunami_agent):
+def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
+        mocker: plugin.MockerFixture,
+        tsunami_agent: ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when vulnerabilities are detected.
         Tsunami supports ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
@@ -128,7 +136,8 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
                                                       risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
 
-def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(tsunami_agent, mocker):
+def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(mocker: plugin.MockerFixture,
+                                                                       tsunami_agent: ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when receiving a message with ip range.
         should run tsunami on all the hosts in the ip range.
     """

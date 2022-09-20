@@ -4,8 +4,12 @@ import logging
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict, List, Any
 
+import func_timeout
+
+
+TIMEOUT = 300
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +26,11 @@ class Tsunami:
     """Tsunami wrapper to enable using tsunami scanner from ostorlab agent class."""
     _output_file = None
 
-    def __enter__(self):
+    def __enter__(self) -> Any:
         self._output_file = tempfile.NamedTemporaryFile(suffix='.json', prefix='tsunami', dir='/tmp', )
         return self
 
-    def _get_target_arg(self, target: Target):
+    def _get_target_arg(self, target: Target) -> str:
         """Select the right argument for tsunami CLI based on the target type.
 
         Args:
@@ -50,7 +54,8 @@ class Tsunami:
         else:
             raise ValueError('Could not find any target.')
 
-    def _start_scan(self, target, output_file: str):
+    @func_timeout.func_set_timeout(TIMEOUT)  # type: ignore[misc]
+    def _start_scan(self, target: Target, output_file: str) -> None:
         """Run a tsunami scan using python subprocess.
 
         Args:
@@ -72,35 +77,44 @@ class Tsunami:
 
         subprocess.run(tsunami_command, encoding='utf-8', stdout=subprocess.DEVNULL, check=True)
 
-    def _parse_result(self, output_file):
+    def _parse_result(self, output_file: Optional[Any]) -> Dict[str, Any]:
         """After the scan is done, parse the output json file into a dict of the scan Findings.
         returns:
             - scan results.
         """
-        logger.info('scan is done, parsing the results from %s.', output_file.name)
-        tsunami_result = json.load(output_file)
-        json_result = {
+        json_result: Dict[str, Any] = {
             'vulnerabilities': []
         }
-        if 'SUCCEEDED' in tsunami_result['scanStatus'] and 'scanFindings' in tsunami_result.keys():
-            json_result['status'] = 'success'
-            logger.info('scan status: SUCCEEDED')
-            for vul in tsunami_result['scanFindings']:
-                json_result['vulnerabilities'].append(vul)
-        else:
-            json_result['status'] = 'failed'
+        if output_file is not None:
+            logger.info('scan is done, parsing the results from %s.', output_file.name)
+            tsunami_result = json.load(output_file)
+
+            if 'SUCCEEDED' in tsunami_result['scanStatus'] and 'scanFindings' in tsunami_result.keys():
+                json_result['status'] = 'success'
+                logger.info('scan status: SUCCEEDED')
+                for vul in tsunami_result['scanFindings']:
+                    json_result['vulnerabilities'].append(vul)
+            else:
+                json_result['status'] = 'failed'
         return json_result
 
-    def scan(self, target: Target):
+    def scan(self, target: Target) -> Dict[str, Any]:
         """Start a scan, wait for the scan results and clean the scan output.
 
            returns:
             - Scan results from tsunami.
         """
-        self._start_scan(target, self._output_file.name)
-        findings = self._parse_result(self._output_file)
-        return findings
+        try:
+            if self._output_file is not None:
+                self._start_scan(target, self._output_file.name)
+                findings = self._parse_result(self._output_file)
+                return findings
+            else:
+                return {}
+        except func_timeout.exceptions.FunctionTimedOut:
+            return {}
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._output_file.close()
+    def __exit__(self, exc_type: str, exc_val: str, exc_tb: str) -> Any:
+        if self._output_file is not None:
+            self._output_file.close()
         return self

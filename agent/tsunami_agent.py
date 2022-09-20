@@ -28,12 +28,14 @@ logger = logging.getLogger(__name__)
 def _prepare_domain_name(message: msg.Message) -> Union[str, None]:
     """Prepare domain name based on type, if url is provided, return its domain."""
     if message.data.get('name') is not None:
-        return message.data.get('name')
+        return str(message.data['name'])
     elif message.data.get('url') is not None:
-        return parse.urlparse(message.data.get('url')).netloc
+        return str(parse.urlparse(message.data['url']).netloc)
+    else:
+        return None
 
 
-def _prepare_targets(message) -> List[tsunami.Target]:
+def _prepare_targets(message: msg.Message) -> List[tsunami.Target]:
     """Prepare Targets and dispatch it to prepare domain/url or host"""
     if _prepare_domain_name(message) is not None:
         return [tsunami.Target(domain=_prepare_domain_name(message))]
@@ -47,13 +49,15 @@ def _prepare_targets(message) -> List[tsunami.Target]:
             raise ValueError(f'Incorrect ip version {message.data["version"]}')
         try:
             if message.data.get('mask') is None:
-                ip_network = ipaddress.ip_network(message.data.get('host'))
+                ip_network = ipaddress.ip_network(message.data['host'])
             else:
                 ip_network = ipaddress.ip_network(f"""{message.data.get('host')}/{message.data.get('mask')}""")
             return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()]
         except ValueError:
             logger.info('Incorrect %s / %s', {message.data.get('host')}, {message.data.get('mask')})
             return []
+    else:
+        return []
 
 
 class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin, persist_mixin.AgentPersistMixin):
@@ -67,7 +71,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         super().__init__(agent_definition, agent_settings)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
 
-    def _check_asset_was_added(self, targets) -> bool:
+    def _check_asset_was_added(self, targets: tsunami.Target) -> bool:
         """Check if the asset was scanned before or not"""
         if targets.domain is not None:
             if self.set_add(b'agent_tsunami', f'{targets.domain}'):
@@ -102,7 +106,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
             with tsunami.Tsunami() as tsunami_scanner:
                 scan_result = tsunami_scanner.scan(target=target)
                 logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
-                for vulnerability in scan_result.get('vulnerabilities', []):
+                for vulnerability in scan_result.get('vulnerabilities', {}):
                     # risk_rating will be HIGH for all detected vulnerabilities
                     risk_rating = 'HIGH'
                     self.report_vulnerability(
