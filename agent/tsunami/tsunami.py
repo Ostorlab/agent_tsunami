@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
+import types
 
 import func_timeout
 
@@ -114,7 +115,8 @@ class Tsunami:
         except func_timeout.exceptions.FunctionTimedOut:
             return {}
 
-    def __exit__(self, exc_type: str, exc_val: str, exc_tb: str) -> Any:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None,
+                 exc_tb: types.TracebackType | None,) -> Any:
         if self._output_file is not None:
             self._output_file.close()
         return self
