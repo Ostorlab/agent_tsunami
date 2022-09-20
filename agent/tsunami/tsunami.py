@@ -4,7 +4,7 @@ import logging
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, Any
 
 import func_timeout
 
