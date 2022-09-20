@@ -1,6 +1,6 @@
 """Pytest fixtures for the Tsunami agent"""
 import pathlib
-from typing import List, Dict, Union, Any
+from typing import List, Dict, Union
 
 import pytest
 from ostorlab.agent.message import message
