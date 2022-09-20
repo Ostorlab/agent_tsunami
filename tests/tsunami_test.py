@@ -1,10 +1,14 @@
 """Unittests for tsunami class."""
+from typing import List
 import json
+
+from ostorlab.agent.message import message
+from pytest_mock import plugin
 
 from agent.tsunami import tsunami
 
 
-def _start_scan_success(self, target, output_file):
+def _start_scan_success(self: tsunami.Tsunami, target: tsunami.Target, output_file: str) -> None:
     data = {
         'scanStatus': 'SUCCEEDED',
         'scanFindings': []
@@ -13,7 +17,7 @@ def _start_scan_success(self, target, output_file):
         json.dump(data, outfile)
 
 
-def _start_scan_failed(self, target, output_file):
+def _start_scan_failed(self: tsunami.Tsunami, target: tsunami.Target, output_file: str) -> None:
     data = {
         'scanStatus': 'FAILED',
         'scanFindings': []
@@ -22,7 +26,8 @@ def _start_scan_failed(self, target, output_file):
         json.dump(data, outfile)
 
 
-def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(agent_mock, mocker):
+def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(agent_mock: List[message.Message],
+                                                                          mocker: plugin.MockerFixture) -> None:
     """Tsunami class is responsible for running a scan using Tsunami scanned CLi on a specific target.
     when provided with valid Target the class method scan() should return a valid dict with all the findings from
     tsunami output file.
@@ -38,7 +43,8 @@ def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(agent_
         assert 'success' in scan_result['status']
 
 
-def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(agent_mock, mocker):
+def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(agent_mock: List[message.Message],
+                                                                 mocker: plugin.MockerFixture) -> None:
     """Tsunami class is responsible for running a scan using Tsunami scanned CLi on a specific target.
     when provided with valid Target the class method scan() should return a valid dict with all the findings from
     tsunami output file.
