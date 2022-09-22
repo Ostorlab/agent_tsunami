@@ -16,6 +16,7 @@ def fixture_tsunami_agent(agent_mock: List[message.Message],
     with (pathlib.Path(__file__).parent.parent / 'ostorlab.yaml').open() as yaml_o:
 
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
+        definition.args[0]['value'] = '([a-zA-Z]+://ostorlab.co/?.*)'
         settings = runtime_definitions.AgentSettings(
             key='agent/ostorlab/tsunami',
             redis_url='redis://guest:guest@localhost:6379'
