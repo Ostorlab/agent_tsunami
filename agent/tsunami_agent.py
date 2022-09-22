@@ -1,10 +1,9 @@
 """Agent implementation for tsunami scanner."""
 import ipaddress
 import logging
-from typing import List, Union
+from typing import List, Union, Optional
 from urllib import parse
 import re
-from typing import Optional
 
 from ostorlab.agent import agent
 from ostorlab.agent.kb import kb
@@ -48,11 +47,10 @@ def _prepare_domain_name_and_url(message: msg.Message, scope_urls_regex: Optiona
 
 
 def _prepare_targets(message: msg.Message, scope_urls_regex: Optional[str]) -> List[tsunami.Target]:
-    """Prepare Targets and dispatch it to prepare:"""
-    """domain/link"""
+    """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
     if (domain := _prepare_domain_name_and_url(message, scope_urls_regex)) is not None:
         return [tsunami.Target(domain=domain)]
-    """host"""
+
     if message.data.get('host') is not None:
         version = message.data['version']
         if version == 6:
