@@ -1,7 +1,7 @@
 """Agent implementation for tsunami scanner."""
 import ipaddress
 import logging
-from typing import List, Union, Optional
+from typing import List, Optional
 from urllib import parse
 import re
 
