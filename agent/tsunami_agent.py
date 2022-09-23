@@ -1,7 +1,7 @@
 """Agent implementation for tsunami scanner."""
 import ipaddress
 import logging
-from typing import List, Optional, Tuple
+from typing import Any, Optional, Tuple
 from urllib import parse
 import re
 
@@ -117,7 +117,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         else:
             return 'http'
 
-    def _prepare_targets(self, message: msg.Message) -> Tuple[List[tsunami.Target], str]:
+    def _prepare_targets(self, message: msg.Message) -> Tuple[Any, Any]:
         """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
         # domain_name message
         if message.data.get('name') is not None:
@@ -158,7 +158,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 logger.info('Incorrect %s / %s', {message.data.get('host')}, {message.data.get('mask')})
                 return [], None
 
-        return []
+        return [], None
 
 
 if __name__ == '__main__':
