@@ -135,6 +135,56 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
                                                       risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
 
+def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
+        mocker: plugin.MockerFixture,
+        tsunami_agent: ts_agt.AgentTsunami) -> None:
+    """Test Tsunami agent when vulnerabilities are detected.
+        Tsunami supports ipv4, ipv6 and hostname (domain), therefore every received message
+        should have a valid ip version, other-ways the agent should raise a ValueError exception.
+    """
+
+    data = {
+        'scanStatus': 'SUCCEEDED',
+        'vulnerabilities': [
+            {
+                'vulnerability': {
+                    'title': 'Ostorlab Platform',
+                    'description': 'Ostorlab is not password protected'
+                }
+            }
+        ]
+    }
+    risk_rating = 'HIGH'
+    description = 'Ostorlab is not password protected'
+    kb_entry = kb.Entry(
+        title='Ostorlab Platform',
+        risk_rating=risk_rating,
+        short_description=description,
+        description=description,
+        recommendation='',
+        references={},
+        security_issue=True,
+        privacy_issue=False,
+        has_public_exploit=True,
+        targeted_by_malware=True,
+        targeted_by_ransomware=True,
+        targeted_by_nation_state=True
+    )
+
+    mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
+    mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
+    msg = message.Message.from_data(selector='v3.asset.domain_name.service', data={'name': 'ostorlab.co',
+                                                                                   'port': 6000,
+                                                                                   'schema': 'https'
+                                                                                   })
+
+    tsunami_agent.process(msg)
+
+    mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
+                                                      technical_detail=f'```json\n{data}\n```',
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+
+
 def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
         mocker: plugin.MockerFixture,
         tsunami_agent: ts_agt.AgentTsunami) -> None:
@@ -173,7 +223,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
     mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
-    msg = message.Message.from_data(selector='v3.asset.domain_name', data={'name': 'https://ostorlab.co'})
+    msg = message.Message.from_data(selector='v3.asset.domain_name', data={'name': 'ostorlab.co'})
 
     tsunami_agent.process(msg)
 
@@ -189,7 +239,7 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldNotScan
     """
 
     _run_command_mock = mocker.patch('subprocess.run', return_value=None)
-    msg = message.Message.from_data(selector='v3.asset.link', data={'url': 'https://test.ostorlab.co',
+    msg = message.Message.from_data(selector='v3.asset.link', data={'url': 'test.ostorlab.co',
                                                                     'method': 'GET'})
     tsunami_agent.process(msg)
     _run_command_mock.assert_not_called()

@@ -26,52 +26,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _should_process_url(scope_urls_regex: Optional[str], url: str) -> bool:
-    if scope_urls_regex is None:
-        return True
-    link_in_scan_domain = re.match(scope_urls_regex, url) is not None
-    if not link_in_scan_domain:
-        logger.warning('link url %s is not in domain %s', url, scope_urls_regex)
-    return link_in_scan_domain
-
-
-def _prepare_domain_name_and_url(message: msg.Message, scope_urls_regex: Optional[str]) -> Union[str, None]:
-    """Prepare domain name based on type, if url is provided, return its domain."""
-    if (domain_name := message.data.get('name')) is not None:
-        return str(message.data['name']) if _should_process_url(scope_urls_regex, domain_name) else None
-    elif (url := message.data.get('url')) is not None:
-        return str(parse.urlparse(message.data['url']).netloc) if _should_process_url(scope_urls_regex,
-                                                                                      url) else None
-    else:
-        return None
-
-
-def _prepare_targets(message: msg.Message, scope_urls_regex: Optional[str]) -> List[tsunami.Target]:
-    """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
-    if (domain := _prepare_domain_name_and_url(message, scope_urls_regex)) is not None:
-        return [tsunami.Target(domain=domain)]
-
-    if message.data.get('host') is not None:
-        version = message.data['version']
-        if version == 6:
-            version = 'v6'
-        elif message.data['version'] == 4:
-            version = 'v4'
-        else:
-            raise ValueError(f'Incorrect ip version {message.data["version"]}')
-        try:
-            if message.data.get('mask') is None:
-                ip_network = ipaddress.ip_network(message.data['host'])
-            else:
-                ip_network = ipaddress.ip_network(f"""{message.data.get('host')}/{message.data.get('mask')}""")
-            return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()]
-        except ValueError:
-            logger.info('Incorrect %s / %s', {message.data.get('host')}, {message.data.get('mask')})
-            return []
-    else:
-        return []
-
-
 class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVulnMixin, persist_mixin.AgentPersistMixin):
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
     For more visit https://github.com/Ostorlab/ostorlab."""
@@ -111,7 +65,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 logger.info('target %s was processed before, exiting', addresses)
                 return
 
-        targets = _prepare_targets(message=message, scope_urls_regex=self._scope_urls_regex)
+        targets = self._prepare_targets(message=message, scope_urls_regex=self._scope_urls_regex)
         for target in targets:
             if target.domain is not None:
                 if self._check_asset_was_added(target) is True:
@@ -141,6 +95,70 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
         logger.info('done processing the message')
+
+    def _should_process_target(self, scope_urls_regex: Optional[str], url: str) -> bool:
+        if scope_urls_regex is None:
+            return True
+        link_in_scan_domain = re.match(scope_urls_regex, url) is not None
+        if not link_in_scan_domain:
+            logger.warning('link url %s is not in domain %s', url, scope_urls_regex)
+        return link_in_scan_domain
+
+    def _get_schema(self, message: msg.Message) -> str:
+        """Returns the schema to be used for the target."""
+        if message.data.get('schema') is not None:
+            return str(message.data['schema'])
+        elif message.data.get('protocol') is not None:
+            return str(message.data['protocol'])
+        elif self.args.get('https') is True:
+            return 'https'
+        else:
+            return 'http'
+
+    def _prepare_targets(self, message: msg.Message, scope_urls_regex: Optional[str]) -> List[tsunami.Target]:
+        """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
+        # domain_name message
+        if message.data.get('name') is not None:
+            target = str(message.data['name'])
+            schema = self._get_schema(message)
+            port = message.data.get('port')
+            if schema == 'https' and port not in [443, None]:
+                url = f'https://{target}:{port}'
+            elif schema == 'https':
+                url = f'https://{target}'
+            elif port == 80:
+                url = f'http://{target}'
+            elif port is None:
+                url = f'{schema}://{target}'
+            else:
+                url = f'{schema}://{target}:{port}'
+            if self._should_process_target(scope_urls_regex, url):
+                return [tsunami.Target(domain=url)]
+        # link message
+        elif message.data.get('url') is not None:
+            target = str(message.data['url'])
+            if self._should_process_target(scope_urls_regex, target):
+                return [tsunami.Target(domain=str(parse.urlparse(target).netloc))]
+        # IP message
+        elif message.data.get('host') is not None:
+            version = message.data['version']
+            if version == 6:
+                version = 'v6'
+            elif message.data['version'] == 4:
+                version = 'v4'
+            else:
+                raise ValueError(f'Incorrect ip version {message.data["version"]}')
+            try:
+                if message.data.get('mask') is None:
+                    ip_network = ipaddress.ip_network(message.data['host'])
+                else:
+                    ip_network = ipaddress.ip_network(f"""{message.data.get('host')}/{message.data.get('mask')}""")
+                return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()]
+            except ValueError:
+                logger.info('Incorrect %s / %s', {message.data.get('host')}, {message.data.get('mask')})
+                return []
+
+        return []
 
 
 if __name__ == '__main__':
