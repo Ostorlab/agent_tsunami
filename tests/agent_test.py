@@ -23,7 +23,8 @@ def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorExcept
 
 
 def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(mocker: plugin.MockerFixture,
-                                                                            tsunami_agent_no_scope: ts_agt.AgentTsunami) -> None:
+                                                                            tsunami_agent_no_scope:
+                                                                            ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when receiving a message with invalid ip version.
         Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
         should have a valid ip version, other-ways the agent should raise a ValueError exception.
@@ -258,7 +259,8 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldN
 
 
 def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(mocker: plugin.MockerFixture,
-                                                                       tsunami_agent_no_scope: ts_agt.AgentTsunami) -> None:
+                                                                       tsunami_agent_no_scope:
+                                                                       ts_agt.AgentTsunami) -> None:
     """Test Tsunami agent when receiving a message with ip range.
         should run tsunami on all the hosts in the ip range.
     """
