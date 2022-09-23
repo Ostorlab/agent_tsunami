@@ -65,34 +65,36 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 logger.info('target %s was processed before, exiting', addresses)
                 return
 
-        targets = self._prepare_targets(message=message, scope_urls_regex=self._scope_urls_regex)
-        for target in targets:
-            if target.domain is not None:
-                if self._check_asset_was_added(target) is True:
-                    return
-            with tsunami.Tsunami() as tsunami_scanner:
-                scan_result = tsunami_scanner.scan(target=target)
-                logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
-                for vulnerability in scan_result.get('vulnerabilities', {}):
-                    # risk_rating will be HIGH for all detected vulnerabilities
-                    risk_rating = 'HIGH'
-                    self.report_vulnerability(
-                        entry=kb.Entry(
-                            title=vulnerability['vulnerability']['title'],
-                            risk_rating=risk_rating,
-                            short_description=vulnerability['vulnerability']['description'],
-                            description=vulnerability['vulnerability']['description'],
-                            recommendation='',
-                            references={},
-                            security_issue=True,
-                            privacy_issue=False,
-                            has_public_exploit=True,
-                            targeted_by_malware=True,
-                            targeted_by_ransomware=True,
-                            targeted_by_nation_state=True
-                        ),
-                        technical_detail=f'```json\n{scan_result}\n```',
-                        risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+        targets, t = self._prepare_targets(message=message)
+
+        if self._should_process_target(self._scope_urls_regex, t) is True:
+            for target in targets:
+                if target.domain is not None:
+                    if self._check_asset_was_added(target) is True:
+                        return
+                with tsunami.Tsunami() as tsunami_scanner:
+                    scan_result = tsunami_scanner.scan(target=target)
+                    logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
+                    for vulnerability in scan_result.get('vulnerabilities', {}):
+                        # risk_rating will be HIGH for all detected vulnerabilities
+                        risk_rating = 'HIGH'
+                        self.report_vulnerability(
+                            entry=kb.Entry(
+                                title=vulnerability['vulnerability']['title'],
+                                risk_rating=risk_rating,
+                                short_description=vulnerability['vulnerability']['description'],
+                                description=vulnerability['vulnerability']['description'],
+                                recommendation='',
+                                references={},
+                                security_issue=True,
+                                privacy_issue=False,
+                                has_public_exploit=True,
+                                targeted_by_malware=True,
+                                targeted_by_ransomware=True,
+                                targeted_by_nation_state=True
+                            ),
+                            technical_detail=f'```json\n{scan_result}\n```',
+                            risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
 
         logger.info('done processing the message')
 
@@ -115,7 +117,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         else:
             return 'http'
 
-    def _prepare_targets(self, message: msg.Message, scope_urls_regex: Optional[str]) -> List[tsunami.Target]:
+    def _prepare_targets(self, message: msg.Message) -> (List[tsunami.Target], str):
         """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
         # domain_name message
         if message.data.get('name') is not None:
@@ -132,13 +134,11 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 url = f'{schema}://{target}'
             else:
                 url = f'{schema}://{target}:{port}'
-            if self._should_process_target(scope_urls_regex, url):
-                return [tsunami.Target(domain=url)]
+            return [tsunami.Target(domain=url)], url
         # link message
         elif message.data.get('url') is not None:
             target = str(message.data['url'])
-            if self._should_process_target(scope_urls_regex, target):
-                return [tsunami.Target(domain=str(parse.urlparse(target).netloc))]
+            return [tsunami.Target(domain=str(parse.urlparse(target).netloc))], target
         # IP message
         elif message.data.get('host') is not None:
             version = message.data['version']
@@ -153,10 +153,10 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                     ip_network = ipaddress.ip_network(message.data['host'])
                 else:
                     ip_network = ipaddress.ip_network(f"""{message.data.get('host')}/{message.data.get('mask')}""")
-                return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()]
+                return [tsunami.Target(version=version, address=str(host)) for host in ip_network.hosts()], ip_network
             except ValueError:
                 logger.info('Incorrect %s / %s', {message.data.get('host')}, {message.data.get('mask')})
-                return []
+                return [], None
 
         return []
 
