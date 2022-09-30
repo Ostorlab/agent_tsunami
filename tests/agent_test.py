@@ -253,7 +253,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldN
     """
 
     _run_command_mock = mocker.patch('subprocess.run', return_value=None)
-    msg = message.Message.from_data(selector='v3.asset.domain_name', data={'name': 'https://test.ostorlab.co'})
+    msg = message.Message.from_data(selector='v3.asset.domain_name', data={'name': 'test.ostorlab.co'})
     tsunami_agent.process(msg)
     _run_command_mock.assert_not_called()
 
