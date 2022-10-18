@@ -49,6 +49,31 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 return False
         return True
 
+    def _get_vuln_location(self, target):
+        """get the vulnerability location representation of the target
+        Args:
+            target: domaine-name or ipv4 or ipv6
+        """
+        metadata = []
+        if target.address is not None:
+            if target.version == 'v4':
+                asset = ipv4_asset.IPv4(host=target.address, version=4, mask='32')
+            else:
+                asset = ipv6_asset.IPv6(host=target.address, version=6, mask='128')
+
+        elif target.domain is not None:
+            url = urllib.parse.urlparse(target.domain)
+            if url.port is not None:
+                metadata_type = agent_report_vulnerability_mixin.MetaDataType.PORT
+                metadata_value = str(url.port)
+                metadata = [
+                    agent_report_vulnerability_mixin.VulnerabilityLocationMetaData(type=metadata_type,
+                                                                                   value=metadata_value)
+                ]
+            asset = domain_asset.DomainName(name=target.domain)
+
+        return agent_report_vulnerability_mixin.VulnerabilityLocation(asset=asset, metadata=metadata)
+
     def process(self, message: msg.Message) -> None:
         """Starts a tsunami scan, wait for the scan to finish,
         and emit the results.
@@ -77,26 +102,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                         return
                 with tsunami.Tsunami() as tsunami_scanner:
 
-                    metadata = []
-                    if target.address is not None:
-                        if target.version == 'v4':
-                            asset = ipv4_asset.IPv4(host=target.address, version=4, mask='32')
-                        else:
-                            asset = ipv6_asset.IPv6(host=target.address, version=6, mask='128')
-
-                    elif target.domain is not None:
-                        url = urllib.parse.urlparse(target.domain)
-                        if url.port is not None:
-                            metadata_type = agent_report_vulnerability_mixin.MetaDataType.PORT
-                            metadata_value = str(url.port)
-                            metadata = [
-                                agent_report_vulnerability_mixin.VulnerabilityLocationMetaData(type=metadata_type,
-                                                                                               value=metadata_value)
-                            ]
-                        asset = domain_asset.DomainName(name=target.domain)
-
-                    vuln_location = agent_report_vulnerability_mixin.VulnerabilityLocation(asset=asset,
-                                                                                           metadata=metadata)
+                    vuln_location = self._get_vuln_location(target)
 
                     scan_result = tsunami_scanner.scan(target=target)
                     logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
