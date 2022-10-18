@@ -3,6 +3,7 @@ import ipaddress
 import logging
 from typing import Any, Optional, Tuple
 from urllib import parse
+import urllib
 import re
 
 from ostorlab.agent import agent
@@ -13,8 +14,10 @@ from ostorlab.agent.mixins import agent_report_vulnerability_mixin
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.runtimes import definitions as runtime_definitions
 from rich import logging as rich_logging
-
 from agent.tsunami import tsunami
+from ostorlab.assets import domain_name as domain_asset
+from ostorlab.assets import ipv4 as ipv4_asset
+from ostorlab.assets import ipv6 as ipv6_asset
 
 logging.basicConfig(
     format='%(message)s',
@@ -73,6 +76,28 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                     if self._check_asset_was_added(target) is True:
                         return
                 with tsunami.Tsunami() as tsunami_scanner:
+
+                    metadata = []
+                    if target.address is not None:
+                        if target.version == 'v4':
+                            asset = ipv4_asset.IPv4(host=target.address, version=4, mask='32')
+                        else:
+                            asset = ipv6_asset.IPv6(host=target.address, version=6, mask='128')
+
+                    elif target.domain is not None:
+                        url = urllib.parse.urlparse(target.domain)
+                        if url.port is not None:
+                            metadata_type = agent_report_vulnerability_mixin.MetaDataType.PORT
+                            metadata_value = str(url.port)
+                            metadata = [
+                                agent_report_vulnerability_mixin.VulnerabilityLocationMetaData(type=metadata_type,
+                                                                                               value=metadata_value)
+                            ]
+                        asset = domain_asset.DomainName(name=target.domain)
+
+                    vuln_location = agent_report_vulnerability_mixin.VulnerabilityLocation(asset=asset,
+                                                                                           metadata=metadata)
+
                     scan_result = tsunami_scanner.scan(target=target)
                     logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
                     for vulnerability in scan_result.get('vulnerabilities', {}):
@@ -91,10 +116,12 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                                 has_public_exploit=True,
                                 targeted_by_malware=True,
                                 targeted_by_ransomware=True,
-                                targeted_by_nation_state=True
+                                targeted_by_nation_state=True,
                             ),
                             technical_detail=f'```json\n{scan_result}\n```',
-                            risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                            risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+                            vulnerability_location=vuln_location
+                        )
 
         logger.info('done processing the message')
 

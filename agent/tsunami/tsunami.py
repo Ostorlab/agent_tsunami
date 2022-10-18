@@ -47,7 +47,7 @@ class Tsunami:
             if target.version == 'v4':
                 return f'--ip-v4-target={target.address}'
             elif target.version == 'v6':
-                return f'--ip-v4-target={target.address}'
+                return f'--ip-v6-target={target.address}'
             else:
                 raise ValueError(f'Incorrect ip version {target.version}.')
         elif target.domain is not None:

@@ -8,6 +8,9 @@ from pytest_mock import plugin
 
 from agent.tsunami import tsunami
 from agent import tsunami_agent as ts_agt
+from typing import List
+from ostorlab.assets import ipv4 as ipv4_asset
+from ostorlab.assets import domain_name as domain_asset
 
 
 def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorException(
@@ -73,7 +76,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
         has_public_exploit=True,
         targeted_by_malware=True,
         targeted_by_ransomware=True,
-        targeted_by_nation_state=True
+        targeted_by_nation_state=True,
     )
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
@@ -85,7 +88,11 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
                                                       technical_detail=f'```json\n{data}\n```',
-                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+                                                      vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(metadata=[],
+                                                                                                                                    asset=ipv4_asset.IPv4(host='0.0.0.0', version=4, mask='32')
+                                                                                                                                    ))
+
 
 
 def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
@@ -133,7 +140,12 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
                                                       technical_detail=f'```json\n{data}\n```',
-                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+                                                      vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
+                                                          metadata=[],
+                                                          asset=domain_asset.DomainName(name='https://ostorlab.co')
+                                                          )
+                                                      )
 
 
 def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
@@ -183,7 +195,12 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
                                                       technical_detail=f'```json\n{data}\n```',
-                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+                                                      vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
+                                                          metadata=[agent_report_vulnerability_mixin.VulnerabilityLocationMetaData(agent_report_vulnerability_mixin.MetaDataType.PORT, '6000')],
+                                                          asset=domain_asset.DomainName(name='https://ostorlab.co')
+                                                          )
+                                                      )
 
 
 def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldReportVulnerabilities(
@@ -230,7 +247,12 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
 
     mock_report_vulnerability.assert_called_once_with(entry=kb_entry,
                                                       technical_detail=f'```json\n{data}\n```',
-                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                                                      risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+                                                      vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
+                                                          metadata=[],
+                                                          asset=domain_asset.DomainName(name='ostorlab.co')
+                                                          )
+                                                      )
 
 
 def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldNotScan(
@@ -268,3 +290,27 @@ def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(mocker: p
     msg = message.Message.from_data(selector='v3.asset.ip.v4', data={'version': 4, 'host': '0.0.0.0', 'mask': '28'})
     tsunami_agent_no_scope.process(msg)
     assert tsunami_scan_mocker.call_count == 14
+
+
+def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
+    ip_small_range_message: message.Message,
+    tsunami_agent_no_scope: ts_agt.AgentTsunami,
+    agent_mock: List[message.Message],
+    mocker: plugin.MockerFixture
+) -> None:
+    data = {
+        'scanStatus': 'SUCCEEDED',
+        'vulnerabilities': [
+            {
+                'vulnerability': {
+                    'title': 'Ostorlab Platform',
+                    'description': 'Ostorlab is not password protected'
+                }
+            }
+        ]
+    }
+    mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
+    tsunami_agent_no_scope.process(ip_small_range_message)
+
+    assert 'v3.report.vulnerability' in [a.selector for a in agent_mock]
+    assert ['ipv4'] in [list(a.data.get('vulnerability_location', {}).keys()) for a in agent_mock]
