@@ -64,7 +64,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
         elif target.domain is not None:
             url = urllib.parse.urlparse(target.domain)
             if url.port is not None:
-                metadata_type = agent_report_vulnerability_mixin.MetaDataType.PORT
+                metadata_type = agent_report_vulnerability_mixin.MetadataType.PORT
                 metadata_value = str(url.port)
                 metadata = [
                     agent_report_vulnerability_mixin.VulnerabilityLocationMetaData(type=metadata_type,
