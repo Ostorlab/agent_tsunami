@@ -18,6 +18,7 @@ from agent.tsunami import tsunami
 from ostorlab.assets import domain_name as domain_asset
 from ostorlab.assets import ipv4 as ipv4_asset
 from ostorlab.assets import ipv6 as ipv6_asset
+from ostorlab.assets import link as link_asset
 
 logging.basicConfig(
     format='%(message)s',
@@ -49,7 +50,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 return False
         return True
 
-    def _get_vuln_location(self, target):
+    def _get_vuln_location(self, target: tsunami.Target) -> agent_report_vulnerability_mixin.VulnerabilityLocation:
         """get the vulnerability location representation of the target
         Args:
             target: domaine-name or ipv4 or ipv6
@@ -67,10 +68,13 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 metadata_type = agent_report_vulnerability_mixin.MetadataType.PORT
                 metadata_value = str(url.port)
                 metadata = [
-                    agent_report_vulnerability_mixin.VulnerabilityLocationMetaData(type=metadata_type,
+                    agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(type=metadata_type,
                                                                                    value=metadata_value)
                 ]
-            asset = domain_asset.DomainName(name=target.domain)
+            if url.scheme != '':
+                asset = link_asset.Link(url=target, method='GET')
+            else:
+                asset = domain_asset.DomainName(name=target.domain)
 
         return agent_report_vulnerability_mixin.VulnerabilityLocation(asset=asset, metadata=metadata)
 
