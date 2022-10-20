@@ -313,4 +313,4 @@ def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
     tsunami_agent_no_scope.process(ip_small_range_message)
 
     assert 'v3.report.vulnerability' in [a.selector for a in agent_mock]
-    assert ['ipv4'] in [list(a.data.get('vulnerability_location', {}).keys()) for a in agent_mock]
+    assert agent_mock[0].data['vulnerability_location'] == {'ipv4': {'host': '42.42.42.42', 'mask': '32', 'version': 4}}

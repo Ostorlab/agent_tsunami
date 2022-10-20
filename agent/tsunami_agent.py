@@ -1,24 +1,25 @@
 """Agent implementation for tsunami scanner."""
 import ipaddress
 import logging
+import re
+import urllib
 from typing import Any, Optional, Tuple
 from urllib import parse
-import urllib
-import re
 
 from ostorlab.agent import agent
+from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as msg
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
-from ostorlab.agent import definitions as agent_definitions
-from ostorlab.runtimes import definitions as runtime_definitions
-from rich import logging as rich_logging
-from agent.tsunami import tsunami
 from ostorlab.assets import domain_name as domain_asset
 from ostorlab.assets import ipv4 as ipv4_asset
 from ostorlab.assets import ipv6 as ipv6_asset
 from ostorlab.assets import link as link_asset
+from ostorlab.runtimes import definitions as runtime_definitions
+from rich import logging as rich_logging
+
+from agent.tsunami import tsunami
 
 logging.basicConfig(
     format='%(message)s',
@@ -72,7 +73,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                                                                                    value=metadata_value)
                 ]
             if url.scheme != '':
-                asset = link_asset.Link(url=target, method='GET')
+                asset = link_asset.Link(url=target.domain, method='GET')
             else:
                 asset = domain_asset.DomainName(name=target.domain)
 
