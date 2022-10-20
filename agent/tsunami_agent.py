@@ -57,6 +57,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
             target: domaine-name or ipv4 or ipv6
         """
         metadata = []
+        asset: ipv4_asset.IPv4 | ipv6_asset.IPv6 | link_asset.Link | domain_asset.DomainName
         if target.address is not None:
             if target.version == 'v4':
                 asset = ipv4_asset.IPv4(host=target.address, version=4, mask='32')
