@@ -66,17 +66,21 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
 
         elif target.domain is not None:
             url = urllib.parse.urlparse(target.domain)
+            assert url.hostname is not None
             if url.port is not None:
                 metadata_type = agent_report_vulnerability_mixin.MetadataType.PORT
                 metadata_value = str(url.port)
-                metadata = [
-                    agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(type=metadata_type,
-                                                                                   value=metadata_value)
-                ]
-            if url.scheme != '':
-                asset = link_asset.Link(url=target.domain, method='GET')
+                asset = domain_asset.DomainName(name=url.hostname)
+
             else:
-                asset = domain_asset.DomainName(name=target.domain)
+                metadata_type = agent_report_vulnerability_mixin.MetadataType.URL
+                metadata_value = target.domain
+                asset = domain_asset.DomainName(name=url.hostname)
+
+            metadata = [
+                agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(type=metadata_type,
+                                                                               value=metadata_value)
+            ]
 
         return agent_report_vulnerability_mixin.VulnerabilityLocation(asset=asset, metadata=metadata)
 

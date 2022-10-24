@@ -8,7 +8,6 @@ from ostorlab.agent.message import message
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
 from ostorlab.assets import domain_name as domain_asset
 from ostorlab.assets import ipv4 as ipv4_asset
-from ostorlab.assets import link as link_asset
 from pytest_mock import plugin
 
 from agent import tsunami_agent as ts_agt
@@ -137,8 +136,7 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
 
     mocker.patch('agent.tsunami.tsunami.Tsunami.scan', return_value=data)
     mock_report_vulnerability = mocker.patch('agent.tsunami_agent.AgentTsunami.report_vulnerability', return_value=None)
-    msg = message.Message.from_data(selector='v3.asset.link', data={'url': 'https://ostorlab.co',
-                                                                    'method': 'GET'})
+    msg = message.Message.from_data(selector='v3.asset.domain_name', data={'name': 'ostorlab.co'})
 
     tsunami_agent.process(msg)
 
@@ -147,8 +145,10 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
         technical_detail=f'```json\n{data}\n```',
         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
-            metadata=[],
-            asset=domain_asset.DomainName(name='https://ostorlab.co')
+            metadata=[agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(
+                agent_report_vulnerability_mixin.MetadataType.URL,
+                'http://ostorlab.co')],
+            asset=domain_asset.DomainName(name='ostorlab.co')
         )
     )
 
@@ -207,7 +207,7 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
                 agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(
                     agent_report_vulnerability_mixin.MetadataType.PORT,
                     '6000')],
-            asset=link_asset.Link(url='https://ostorlab.co', method='GET')
+            asset=domain_asset.DomainName(name='ostorlab.co')
         )
     )
 
@@ -259,8 +259,10 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
         technical_detail=f'```json\n{data}\n```',
         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
-            metadata=[],
-            asset=link_asset.Link(url='http://ostorlab.co', method='GET')
+            metadata=[agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(
+                agent_report_vulnerability_mixin.MetadataType.URL,
+                'http://ostorlab.co')],
+            asset=domain_asset.DomainName(name='ostorlab.co')
         )
     )
 
