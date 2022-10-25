@@ -40,3 +40,16 @@ def fixture_tsunami_agent_no_scope(agent_mock: List[message.Message],
 
         agent = tsunami_agent.AgentTsunami(definition, settings)
         return agent
+
+
+
+@pytest.fixture
+def ip_small_range_message() -> message.Message:
+    """Creates a dummy message of type v3.asset.ip.v4 with a small mask to be used by the agent for testing purposes."""
+    selector = 'v3.asset.ip.v4'
+    msg_data = {
+        'host': '42.42.42.42',
+        'mask': '31',
+        'version': 4
+    }
+    return message.Message.from_data(selector, data=msg_data)

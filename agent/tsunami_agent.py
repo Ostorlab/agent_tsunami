@@ -1,16 +1,21 @@
 """Agent implementation for tsunami scanner."""
 import ipaddress
 import logging
+import re
+import urllib
 from typing import Any, Optional, Tuple
 from urllib import parse
-import re
 
 from ostorlab.agent import agent
+from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as msg
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
-from ostorlab.agent import definitions as agent_definitions
+from ostorlab.assets import domain_name as domain_asset
+from ostorlab.assets import ipv4 as ipv4_asset
+from ostorlab.assets import ipv6 as ipv6_asset
+from ostorlab.assets import link as link_asset
 from ostorlab.runtimes import definitions as runtime_definitions
 from rich import logging as rich_logging
 
@@ -46,6 +51,39 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 return False
         return True
 
+    def _get_vuln_location(self, target: tsunami.Target) -> agent_report_vulnerability_mixin.VulnerabilityLocation:
+        """get the vulnerability location representation of the target
+        Args:
+            target: domaine-name or ipv4 or ipv6
+        """
+        metadata = []
+        asset: ipv4_asset.IPv4 | ipv6_asset.IPv6 | link_asset.Link | domain_asset.DomainName
+        if target.address is not None:
+            if target.version == 'v4':
+                asset = ipv4_asset.IPv4(host=target.address, version=4, mask='32')
+            else:
+                asset = ipv6_asset.IPv6(host=target.address, version=6, mask='128')
+
+        elif target.domain is not None:
+            url = urllib.parse.urlparse(target.domain)
+            assert url.hostname is not None
+            if url.port is not None:
+                metadata_type = agent_report_vulnerability_mixin.MetadataType.PORT
+                metadata_value = str(url.port)
+                asset = domain_asset.DomainName(name=url.hostname)
+
+            else:
+                metadata_type = agent_report_vulnerability_mixin.MetadataType.URL
+                metadata_value = target.domain
+                asset = domain_asset.DomainName(name=url.hostname)
+
+            metadata = [
+                agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(type=metadata_type,
+                                                                               value=metadata_value)
+            ]
+
+        return agent_report_vulnerability_mixin.VulnerabilityLocation(asset=asset, metadata=metadata)
+
     def process(self, message: msg.Message) -> None:
         """Starts a tsunami scan, wait for the scan to finish,
         and emit the results.
@@ -73,6 +111,9 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                     if self._check_asset_was_added(target) is True:
                         return
                 with tsunami.Tsunami() as tsunami_scanner:
+
+                    vuln_location = self._get_vuln_location(target)
+
                     scan_result = tsunami_scanner.scan(target=target)
                     logger.info('found %d vulnerabilities', len(scan_result.get('vulnerabilities', [])))
                     for vulnerability in scan_result.get('vulnerabilities', {}):
@@ -91,10 +132,12 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                                 has_public_exploit=True,
                                 targeted_by_malware=True,
                                 targeted_by_ransomware=True,
-                                targeted_by_nation_state=True
+                                targeted_by_nation_state=True,
                             ),
                             technical_detail=f'```json\n{scan_result}\n```',
-                            risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH)
+                            risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+                            vulnerability_location=vuln_location
+                        )
 
         logger.info('done processing the message')
 
