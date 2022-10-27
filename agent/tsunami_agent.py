@@ -78,7 +78,7 @@ class AgentTsunami(agent.Agent, agent_report_vulnerability_mixin.AgentReportVuln
                 asset = domain_asset.DomainName(name=url.hostname)
 
             metadata = [
-                agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(type=metadata_type,
+                agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(metadata_type=metadata_type,
                                                                                value=metadata_value)
             ]
 
