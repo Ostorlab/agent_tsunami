@@ -121,7 +121,6 @@ class AgentTsunami(
                     if self._check_asset_was_added(target) is True:
                         return
                 with tsunami.Tsunami() as tsunami_scanner:
-
                     vuln_location = self._get_vuln_location(target)
 
                     scan_result = tsunami_scanner.scan(target=target)
