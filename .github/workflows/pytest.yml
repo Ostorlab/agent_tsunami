@@ -37,6 +37,7 @@ jobs:
     - name: Runnning tests with pytest.
       run: |
         set -o pipefail
+        sudo chown $USER:$USER /etc/etc/resolv.conf
         pytest -m "not docker" --cov=. | tee pytest-coverage.txt
     - name: Comment coverage
       uses: coroo/pytest-coverage-commentator@v1.0.2
