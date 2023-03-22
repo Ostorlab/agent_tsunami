@@ -16,10 +16,6 @@ class RunCommandError(Error):
     """Error when running a command using a subprocess."""
 
 
-class VpnSetupError(Error):
-    """Error when running a command using a subprocess."""
-
-
 DNS_RESOLV_CONFIG_PATH = pathlib.Path("/etc/wireguard/wg0.conf")
 WIREGUARD_CONFIG_FILE_PATH = pathlib.Path("/etc/resolv.conf")
 JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=5)
@@ -56,9 +52,7 @@ def enable_vpn(vpn_config: str, dns_config: str) -> None:
     Args:
         vpn_config: country to set up for.
         dns_config: DNS configuration.
-    Raises: VpnSetupError in case of no config available for the provided country.
     """
-    # Write the configuration to the file /etc/wireguard/wg0.conf
     with open(WIREGUARD_CONFIG_FILE_PATH, "w", encoding="UTF-8") as f:
         f.write(vpn_config)
     _exec_command(["wg-quick", "up", "wg0"])
