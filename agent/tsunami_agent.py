@@ -19,6 +19,7 @@ from ostorlab.assets import link as link_asset
 from ostorlab.runtimes import definitions as runtime_definitions
 from rich import logging as rich_logging
 
+from agent import vpn
 from agent.tsunami import tsunami
 
 logging.basicConfig(
@@ -39,6 +40,10 @@ class AgentTsunami(
     """Tsunami scanner implementation for ostorlab. using ostorlab python sdk.
     For more visit https://github.com/Ostorlab/ostorlab."""
 
+    def start(self) -> None:
+        if self._vpn_config is not None and self._dns_config is not None:
+            vpn.enable_vpn(vpn_config=self._vpn_config, dns_config=self._dns_config)
+
     def __init__(
         self,
         agent_definition: agent_definitions.AgentDefinition,
@@ -47,6 +52,8 @@ class AgentTsunami(
         super().__init__(agent_definition, agent_settings)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
         self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
+        self._vpn_config = self.args.get("vpn_config")
+        self._dns_config = self.args.get("dns_config")
 
     def _check_asset_was_added(self, targets: tsunami.Target) -> bool:
         """Check if the asset was scanned before or not"""
