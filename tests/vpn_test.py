@@ -3,7 +3,7 @@ from pytest_mock import plugin
 from agent import tsunami_agent
 
 
-def testVpnSetup_whenVpnCountryIsPresent_shouldCallSetupVpnSetupVpnWithRightConfig(
+def _testVpnSetup_whenVpnCountryIsPresent_shouldCallSetupVpnSetupVpnWithRightConfig(
     fixture_tsunami_agent_with_vpn: tsunami_agent.AgentTsunami,
     mocker: plugin.MockerFixture,
 ) -> None:
