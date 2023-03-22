@@ -38,7 +38,9 @@ jobs:
       run: |
         set -o pipefail
         sudo touch /etc/resolv.conf
+        sudo touch /etc/wireguard/wg0.conf
         sudo chown $USER:$USER /etc/resolv.conf
+        sudo chown $USER:$USER /etc/wireguard/wg0.conf
         pytest -m "not docker" --cov=. | tee pytest-coverage.txt
     - name: Comment coverage
       uses: coroo/pytest-coverage-commentator@v1.0.2
