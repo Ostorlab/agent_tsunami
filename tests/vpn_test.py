@@ -10,8 +10,8 @@ from agent import tsunami_agent
 EXEC_COMMAND_OUTPUT = subprocess.CompletedProcess(
     args="",
     returncode=0,
-    stderr=io.BytesIO(b"..."),
-    stdout=io.BytesIO(b"App starting..."),
+    stderr=io.BytesIO(b"Fake stderr"),
+    stdout=io.BytesIO(b"Fake stdout"),
 )
 
 
