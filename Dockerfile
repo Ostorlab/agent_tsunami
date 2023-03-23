@@ -22,21 +22,21 @@ RUN ./gradlew shadowJar \
     && cp ./tsunami.yaml /usr/tsunami
 
 #Stage 2.
-FROM python:3.10-slim-buster as base
-FROM base as builder
+FROM python:3.10-slim-buster as python-builder
 RUN mkdir /install
 WORKDIR /install
 COPY requirement.txt /requirement.txt
 RUN pip install --prefix=/install -r /requirement.txt
 
 
-FROM base
+FROM ubuntu:22.04
+
 # Install dependencies
-RUN apt update && apt install -y nmap ncrack ca-certificates openjdk-11-jre
+RUN apt update && apt install -y nmap ncrack ca-certificates openjdk-11-jre  wireguard-tools openresolv iproute2
 WORKDIR /usr/tsunami
 COPY --from=tsunami_builder /usr/tsunami /usr/tsunami
 RUN mkdir -p /usr/tsunami/logs
-COPY --from=builder /install /usr/local
+COPY --from=python-builder /install /usr/local
 
 RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
