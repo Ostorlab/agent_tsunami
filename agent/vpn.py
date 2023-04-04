@@ -16,8 +16,8 @@ class RunCommandError(Error):
     """Error when running a command using a subprocess."""
 
 
-DNS_RESOLV_CONFIG_PATH = pathlib.Path("/etc/wireguard/wg0.conf")
-WIREGUARD_CONFIG_FILE_PATH = pathlib.Path("/etc/resolv.conf")
+WIREGUARD_CONFIG_FILE_PATH = pathlib.Path("/etc/wireguard/wg0.conf")
+DNS_RESOLV_CONFIG_PATH = pathlib.Path("/etc/resolv.conf")
 JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=5)
 
 
