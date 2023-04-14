@@ -3,7 +3,7 @@ import ipaddress
 import logging
 import re
 import urllib
-from typing import Optional
+from typing import Optional, Any
 
 from ostorlab.agent import agent
 from ostorlab.agent import definitions as agent_definitions
@@ -94,7 +94,9 @@ class AgentTsunami(
                 return False
         return True
 
-    def _should_process_target(self, message: msg.Message, target: tools.Target):
+    def _should_process_target(
+        self, message: msg.Message, target: tools.Target
+    ) -> bool:
         is_target_verified: bool = True
         if message.data.get("name") is not None or message.data.get("url") is not None:
             is_target_verified = self._should_process_url_targets(target=target.url)
@@ -102,18 +104,20 @@ class AgentTsunami(
             is_target_verified = self._should_process_ip_targets(message=message)
         return is_target_verified
 
-    def _should_process_url_targets(self, target: str) -> bool:
-        if self._scope_urls_regex is None:
+    def _should_process_url_targets(self, target: Optional[str]) -> bool:
+        if target is not None:
+            if self._scope_urls_regex is None:
+                return True
+            link_in_scan_domain = re.match(self._scope_urls_regex, target) is not None
+            if not link_in_scan_domain:
+                logger.warning(
+                    "link url %s is not in domain %s", target, self._scope_urls_regex
+                )
+                return False
             return True
-        link_in_scan_domain = re.match(self._scope_urls_regex, target) is not None
-        if not link_in_scan_domain:
-            logger.warning(
-                "link url %s is not in domain %s", target, self._scope_urls_regex
-            )
-            return False
-        return True
+        return False
 
-    def _should_process_ip_targets(self, message: msg.Message):
+    def _should_process_ip_targets(self, message: msg.Message) -> bool:
         host = message.data.get("host")
         mask = message.data.get("mask")
         if mask is not None:
@@ -163,7 +167,12 @@ class AgentTsunami(
             asset=asset, metadata=metadata
         )
 
-    def _report_vulnerability(self, vulnerability, scan_result, vuln_location):
+    def _report_vulnerability(
+        self,
+        vulnerability: dict[str, dict[str, Any]],
+        scan_result: dict[str, Any],
+        vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation,
+    ) -> None:
         # risk_rating will be HIGH for all detected vulnerabilities
         risk_rating = "HIGH"
         self.report_vulnerability(
