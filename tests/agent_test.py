@@ -11,7 +11,7 @@ from ostorlab.assets import ipv4 as ipv4_asset
 from pytest_mock import plugin
 
 from agent import tsunami_agent as ts_agt
-from agent.tsunami import tsunami
+from agent.tsunami.factory import preapre_tagets_tools as tools
 
 
 def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorException(

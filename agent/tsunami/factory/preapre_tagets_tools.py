@@ -1,7 +1,8 @@
+"""Module for preparing tsunami targets."""
 import dataclasses
 import ipaddress
 import logging
-from typing import Optional, Any, Tuple
+from typing import Optional, Any
 from urllib import parse
 
 from ostorlab.agent.message import message as msg
@@ -13,7 +14,9 @@ class Target:
 
     address: Optional[str] = None
     version: Optional[str] = None
+    ip_network: Optional[ipaddress.IPv4Network | ipaddress.IPv6Network] = None
     domain: Optional[str] = None
+    url: Optional[str] = None
 
 
 def _get_schema(message: msg.Message, args) -> str:
@@ -42,12 +45,12 @@ def _prepare_domain_target(message: msg.Message, args):
         url = f"{schema}://{target}"
     else:
         url = f"{schema}://{target}:{port}"
-    return [Target(domain=url)], url
+    return [Target(domain=url, url=url)]
 
 
 def _prepare_url_target(message: msg.Message):
-    target = str(message.data["url"])
-    return [Target(domain=str(parse.urlparse(target).netloc))], target
+    link = str(message.data["url"])
+    return [Target(domain=str(parse.urlparse(link).netloc), url=link)]
 
 
 def _prepare_ip_target(message: msg.Message):
@@ -66,19 +69,19 @@ def _prepare_ip_target(message: msg.Message):
                 f"""{message.data.get('host')}/{message.data.get('mask')}"""
             )
         return [
-                   Target(version=version, address=str(host))
-                   for host in ip_network.hosts()
-               ], ip_network
+            Target(version=version, address=str(host), ip_network=ip_network)
+            for host in ip_network.hosts()
+        ]
     except ValueError:
         logging.info(
             "Incorrect %s / %s",
             {message.data.get("host")},
             {message.data.get("mask")},
         )
-        return [], None
+        return []
 
 
-def _prepare_targets(message: msg.Message, args) -> Tuple[Any, Any]:
+def prepare_targets(message: msg.Message, args) -> list[Any]:
     """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
     # domain_name message
     if message.data.get("name") is not None:
@@ -89,4 +92,4 @@ def _prepare_targets(message: msg.Message, args) -> Tuple[Any, Any]:
     # IP message
     elif message.data.get("host") is not None:
         return _prepare_ip_target(message)
-    return [], None
+    return []

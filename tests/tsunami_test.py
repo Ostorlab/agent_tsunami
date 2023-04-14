@@ -6,6 +6,7 @@ from ostorlab.agent.message import message
 from pytest_mock import plugin
 
 from agent.tsunami import tsunami
+from agent.tsunami.factory import preapre_tagets_tools as tools
 
 
 def _start_scan_success(
