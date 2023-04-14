@@ -21,6 +21,7 @@ from rich import logging as rich_logging
 
 from agent import vpn
 from agent.tsunami import tsunami
+from agent.tsunami.factory import preapre_tagets_tools as tools
 
 logging.basicConfig(
     format="%(message)s",
@@ -55,7 +56,7 @@ class AgentTsunami(
         self._vpn_config = self.args.get("vpn_config")
         self._dns_config = self.args.get("dns_config")
 
-    def _check_asset_was_added(self, targets: tsunami.Target) -> bool:
+    def _check_asset_was_added(self, targets: tools.Target) -> bool:
         """Check if the asset was scanned before or not"""
         if targets.domain is not None:
             if self.set_add(b"agent_tsunami", f"{targets.domain}"):
@@ -64,7 +65,7 @@ class AgentTsunami(
         return True
 
     def _get_vuln_location(
-        self, target: tsunami.Target
+        self, target: tools.Target
     ) -> agent_report_vulnerability_mixin.VulnerabilityLocation:
         """get the vulnerability location representation of the target
         Args:
@@ -120,9 +121,9 @@ class AgentTsunami(
                 logger.info("target %s was processed before, exiting", addresses)
                 return
 
-        targets, t = self._prepare_targets(message=message)
+        targets, target = self._prepare_targets(message=message)
 
-        if self._should_process_target(self._scope_urls_regex, t) is True:
+        if self._should_process_target(self._scope_urls_regex, target) is True:
             for target in targets:
                 if target.domain is not None:
                     if self._check_asset_was_added(target) is True:
@@ -200,11 +201,11 @@ class AgentTsunami(
                 url = f"{schema}://{target}"
             else:
                 url = f"{schema}://{target}:{port}"
-            return [tsunami.Target(domain=url)], url
+            return [tools.Target(domain=url)], url
         # link message
         elif message.data.get("url") is not None:
             target = str(message.data["url"])
-            return [tsunami.Target(domain=str(parse.urlparse(target).netloc))], target
+            return [tools.Target(domain=str(parse.urlparse(target).netloc))], target
         # IP message
         elif message.data.get("host") is not None:
             version = message.data["version"]
@@ -222,7 +223,7 @@ class AgentTsunami(
                         f"""{message.data.get('host')}/{message.data.get('mask')}"""
                     )
                 return [
-                    tsunami.Target(version=version, address=str(host))
+                    tools.Target(version=version, address=str(host))
                     for host in ip_network.hosts()
                 ], ip_network
             except ValueError:

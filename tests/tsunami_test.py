@@ -9,7 +9,7 @@ from agent.tsunami import tsunami
 
 
 def _start_scan_success(
-    self: tsunami.Tsunami, target: tsunami.Target, output_file: str
+    self: tsunami.Tsunami, target: tools.Target, output_file: str
 ) -> None:
     data = {"scanStatus": "SUCCEEDED", "scanFindings": []}
     with open(output_file, "w", encoding="utf-8") as outfile:
@@ -17,7 +17,7 @@ def _start_scan_success(
 
 
 def _start_scan_failed(
-    self: tsunami.Tsunami, target: tsunami.Target, output_file: str
+    self: tsunami.Tsunami, target: tools.Target, output_file: str
 ) -> None:
     data = {"scanStatus": "FAILED", "scanFindings": []}
     with open(output_file, "w", encoding="utf-8") as outfile:
@@ -33,7 +33,7 @@ def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(
     """
 
     mocker.patch("agent.tsunami.tsunami.Tsunami._start_scan", _start_scan_success)
-    target = tsunami.Target(address="0.0.0.0", version="v6", domain=None)
+    target = tools.Target(address="0.0.0.0", version="v6", domain=None)
 
     with tsunami.Tsunami() as tsunami_scanner:
         scan_result = tsunami_scanner.scan(target)
@@ -51,7 +51,7 @@ def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(
     """
 
     mocker.patch("agent.tsunami.tsunami.Tsunami._start_scan", _start_scan_failed)
-    target = tsunami.Target(address="0.0.0.0", version="v6", domain=None)
+    target = tools.Target(address="0.0.0.0", version="v6", domain=None)
     with tsunami.Tsunami() as tsunami_scanner:
         scan_result = tsunami_scanner.scan(target)
         assert "vulnerabilities" in scan_result

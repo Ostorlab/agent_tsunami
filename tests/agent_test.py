@@ -42,7 +42,7 @@ def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(
     msg = message.Message.from_data(
         selector="v3.asset.ip.v4", data={"version": 4, "host": "0.0.0.0"}
     )
-    target = tsunami.Target(address="0.0.0.0", version="v4")
+    target = tools.Target(address="0.0.0.0", version="v4")
 
     tsunami_agent_no_scope.process(msg)
 
@@ -94,7 +94,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
     msg = message.Message.from_data(
         selector="v3.asset.ip.v4", data={"version": 4, "host": "0.0.0.0"}
     )
-    tsunami.Target(address="0.0.0.0", version="v4")
+    tools.Target(address="0.0.0.0", version="v4")
 
     tsunami_agent_no_scope.process(msg)
 

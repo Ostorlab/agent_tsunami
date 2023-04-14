@@ -3,25 +3,17 @@ import json
 import logging
 import subprocess
 import tempfile
-from dataclasses import dataclass
 from typing import Optional, Dict, Any
 import types
 
 import func_timeout
 
+from agent.tsunami.factory import preapre_tagets_tools as tools
+
 
 TIMEOUT = 300
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Target:
-    """Data Class for tsunami target."""
-
-    address: Optional[str] = None
-    version: Optional[str] = None
-    domain: Optional[str] = None
 
 
 class Tsunami:
@@ -37,7 +29,7 @@ class Tsunami:
         )
         return self
 
-    def _get_target_arg(self, target: Target) -> str:
+    def _get_target_arg(self, target: tools.Target) -> str:
         """Select the right argument for tsunami CLI based on the target type.
 
         Args:
@@ -62,7 +54,7 @@ class Tsunami:
             raise ValueError("Could not find any target.")
 
     @func_timeout.func_set_timeout(TIMEOUT)  # type: ignore[misc]
-    def _start_scan(self, target: Target, output_file: str) -> None:
+    def _start_scan(self, target: tools.Target, output_file: str) -> None:
         """Run a tsunami scan using python subprocess.
 
         Args:
@@ -109,7 +101,7 @@ class Tsunami:
                 json_result["status"] = "failed"
         return json_result
 
-    def scan(self, target: Target) -> Dict[str, Any]:
+    def scan(self, target: tools.Target) -> Dict[str, Any]:
         """Start a scan, wait for the scan results and clean the scan output.
 
         returns:
