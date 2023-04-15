@@ -53,7 +53,7 @@ def _prepare_url_target(message: msg.Message) -> list[Target]:
     return [Target(domain=str(parse.urlparse(link).netloc), url=link)]
 
 
-def _prepare_ip_target(message: msg.Message) -> list[Target]:
+def _prepare_ip_targets(message: msg.Message) -> list[Target]:
     version = message.data["version"]
     if version == 6:
         version = "v6"
@@ -91,5 +91,6 @@ def prepare_targets(message: msg.Message, args: dict[str, Any]) -> list[Target]:
         return _prepare_url_target(message)
     # IP message
     elif message.data.get("host") is not None:
-        return _prepare_ip_target(message)
-    return []
+        return _prepare_ip_targets(message)
+    else:
+        raise ValueError("Message is invalid.")

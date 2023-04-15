@@ -104,17 +104,19 @@ class AgentTsunami(
         return True
 
     def _should_process_url_targets(self, target: Optional[str]) -> bool:
-        if target is not None:
-            if self._scope_urls_regex is None:
-                return True
-            link_in_scan_domain = re.match(self._scope_urls_regex, target) is not None
-            if not link_in_scan_domain:
-                logger.warning(
-                    "link url %s is not in domain %s", target, self._scope_urls_regex
-                )
-                return False
+        if target is None:
+            return False
+
+        if self._scope_urls_regex is None:
             return True
-        return False
+
+        if re.match(self._scope_urls_regex, target) is None:
+            logger.warning(
+                "link url %s is not in domain %s", target, self._scope_urls_regex
+            )
+            return False
+        else:
+            return True
 
     def _should_process_ip_targets(self, message: msg.Message) -> bool:
         host = message.data.get("host")
@@ -123,7 +125,7 @@ class AgentTsunami(
             addresses = ipaddress.ip_network(f"{host}/{mask}")
         else:
             addresses = ipaddress.ip_network(f"{host}")
-        if not self.add_ip_network("agent_tsunami", addresses):
+        if self.add_ip_network("agent_tsunami", addresses) is False:
             logger.info("target %s was processed before, exiting", addresses)
             return False
         return True
