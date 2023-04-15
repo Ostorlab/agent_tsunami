@@ -7,26 +7,13 @@ from ostorlab.agent.message import message
 from agent.tsunami.factory import preapre_tagets_tools as tools
 
 
-msg_1 = message.Message.from_data(
-    selector="v3.asset.domain_name", data={"name": "ostorlab.co"}
-)
-msg_2 = message.Message.from_data(
-    selector="v3.asset.ip.v4", data={"version": 4, "host": "0.0.0.0"}
-)
-msg_3 = message.Message.from_data(
-    selector="v3.asset.domain_name.service",
-    data={"name": "ostorlab.co", "port": 6000, "schema": "https"},
-)
-msg_4 = message.Message.from_data(
-    selector="v3.asset.link", data={"url": "test.ostorlab.co", "method": "GET"}
-)
-
-
 @pytest.mark.parametrize(
     "input_message,expected",
     [
         (
-            msg_1,
+            message.Message.from_data(
+                selector="v3.asset.domain_name", data={"name": "ostorlab.co"}
+            ),
             [
                 tools.Target(
                     address=None,
@@ -38,7 +25,9 @@ msg_4 = message.Message.from_data(
             ],
         ),
         (
-            msg_2,
+            message.Message.from_data(
+                selector="v3.asset.ip.v4", data={"version": 4, "host": "0.0.0.0"}
+            ),
             [
                 tools.Target(
                     address="0.0.0.0",
@@ -50,7 +39,10 @@ msg_4 = message.Message.from_data(
             ],
         ),
         (
-            msg_3,
+            message.Message.from_data(
+                selector="v3.asset.domain_name.service",
+                data={"name": "ostorlab.co", "port": 6000, "schema": "https"},
+            ),
             [
                 tools.Target(
                     address=None,
@@ -62,7 +54,10 @@ msg_4 = message.Message.from_data(
             ],
         ),
         (
-            msg_4,
+            message.Message.from_data(
+                selector="v3.asset.link",
+                data={"url": "test.ostorlab.co", "method": "GET"},
+            ),
             [
                 tools.Target(
                     address=None,

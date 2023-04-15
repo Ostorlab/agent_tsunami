@@ -31,7 +31,7 @@ def _get_schema(message: msg.Message, args: dict[str, Any]) -> str:
         return "http"
 
 
-def _prepare_domain_target(message: msg.Message, args: dict[str, Any]) -> list[Target]:
+def _prepare_domain_target(message: msg.Message, args: dict[str, Any]) -> Target:
     target = str(message.data["name"])
     schema = _get_schema(message, args)
     port = message.data.get("port")
@@ -45,12 +45,12 @@ def _prepare_domain_target(message: msg.Message, args: dict[str, Any]) -> list[T
         url = f"{schema}://{target}"
     else:
         url = f"{schema}://{target}:{port}"
-    return [Target(domain=url, url=url)]
+    return Target(domain=url, url=url)
 
 
-def _prepare_url_target(message: msg.Message) -> list[Target]:
+def _prepare_url_target(message: msg.Message) -> Target:
     link = str(message.data["url"])
-    return [Target(domain=str(parse.urlparse(link).netloc), url=link)]
+    return Target(domain=str(parse.urlparse(link).netloc), url=link)
 
 
 def _prepare_ip_targets(message: msg.Message) -> list[Target]:
@@ -85,10 +85,10 @@ def prepare_targets(message: msg.Message, args: dict[str, Any]) -> list[Target]:
     """Prepare Targets and dispatch it to prepare: domain/link and hosts."""
     # domain_name message
     if message.data.get("name") is not None:
-        return _prepare_domain_target(message, args)
+        return [_prepare_domain_target(message, args)]
     # link message
     elif message.data.get("url") is not None:
-        return _prepare_url_target(message)
+        return [_prepare_url_target(message)]
     # IP message
     elif message.data.get("host") is not None:
         return _prepare_ip_targets(message)
