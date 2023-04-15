@@ -97,12 +97,11 @@ class AgentTsunami(
     def _should_process_target(
         self, message: msg.Message, target: tools.Target
     ) -> bool:
-        is_target_verified: bool = True
         if message.data.get("name") is not None or message.data.get("url") is not None:
-            is_target_verified = self._should_process_url_targets(target=target.url)
+            return self._should_process_url_targets(target=target.url)
         elif message.data.get("host") is not None:
-            is_target_verified = self._should_process_ip_targets(message=message)
-        return is_target_verified
+            return self._should_process_ip_targets(message=message)
+        return True
 
     def _should_process_url_targets(self, target: Optional[str]) -> bool:
         if target is not None:
