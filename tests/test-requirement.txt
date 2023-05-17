@@ -4,3 +4,12 @@ pytest
 pytest-cov
 pytest-mock
 pyfakefs
+# Typing requirements. 
+mypy
+types-click
+types-protobuf
+types-redis
+types-requests
+types-urllib3
+typing-extensions
+types-cryptography
