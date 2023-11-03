@@ -23,21 +23,26 @@ RUN ./gradlew shadowJar \
 
 
 FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
 # Install dependencies
-RUN apt update && apt install -y --no-install-recommends nmap ncrack ca-certificates openjdk-11-jre wireguard-tools openresolv iptables iproute2 python3-pip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y software-properties-common  \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get remove -y python*
+
+RUN apt update && apt install -y --no-install-recommends nmap ncrack ca-certificates openjdk-11-jre wireguard-tools openresolv iptables iproute2 python3.11 python3.11-dev python3-pip && rm -rf /var/lib/apt/lists/*
 
 COPY --from=tsunami_builder /usr/tsunami /usr/tsunami
 RUN mkdir -p /usr/tsunami/logs
 
 RUN mkdir /install
 WORKDIR /install
+RUN python3.11 -m pip install --upgrade pip
 COPY requirement.txt /requirement.txt
-RUN pip install -r /requirement.txt
-
+RUN python3.11 -m pip install -r /requirement.txt
 
 RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app/agent
-CMD ["python3", "/app/agent/tsunami_agent.py"]
+CMD ["python3.11", "/app/agent/tsunami_agent.py"]
