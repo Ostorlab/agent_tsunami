@@ -7,6 +7,9 @@ from urllib import parse
 
 from ostorlab.agent.message import message as msg
 
+IPV4_CIDR_LIMIT = 16
+IPV6_CIDR_LIMIT = 112
+
 
 @dataclasses.dataclass
 class Target:
@@ -53,21 +56,24 @@ def _prepare_url_target(message: msg.Message) -> Target:
     return Target(domain=str(parse.urlparse(link).netloc), url=link)
 
 
-def _prepare_ip_targets(message: msg.Message) -> list[Target]:
-    version = message.data["version"]
+def _prepare_ip_targets(message: msg.Message, host: str) -> list[Target]:
+    mask = message.data.get("mask")
+    version = message.data.get("version")
     if version == 6:
+        if mask is not None and int(mask) < IPV6_CIDR_LIMIT:
+            raise ValueError(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
         version = "v6"
-    elif message.data["version"] == 4:
+    elif version == 4:
+        if mask is not None and int(mask) < IPV4_CIDR_LIMIT:
+            raise ValueError(f"Subnet mask below {IPV4_CIDR_LIMIT} is not supported.")
         version = "v4"
     else:
-        raise ValueError(f'Incorrect ip version {message.data["version"]}')
+        raise ValueError(f"Incorrect ip version {version}")
     try:
-        if message.data.get("mask") is None:
-            ip_network = ipaddress.ip_network(message.data["host"])
+        if mask is None:
+            ip_network = ipaddress.ip_network(host)
         else:
-            ip_network = ipaddress.ip_network(
-                f"""{message.data.get('host')}/{message.data.get('mask')}"""
-            )
+            ip_network = ipaddress.ip_network(f"""{host}/{mask}""")
         return [
             Target(version=version, address=str(host), ip_network=ip_network)
             for host in ip_network.hosts()
@@ -75,8 +81,8 @@ def _prepare_ip_targets(message: msg.Message) -> list[Target]:
     except ValueError:
         logging.info(
             "Incorrect %s / %s",
-            {message.data.get("host")},
-            {message.data.get("mask")},
+            {host},
+            {mask},
         )
         return []
 
@@ -87,10 +93,11 @@ def prepare_targets(message: msg.Message, args: dict[str, Any]) -> list[Target]:
     if message.data.get("name") is not None:
         return [_prepare_domain_target(message, args)]
     # link message
-    elif message.data.get("url") is not None:
+    if message.data.get("url") is not None:
         return [_prepare_url_target(message)]
     # IP message
-    elif message.data.get("host") is not None:
-        return _prepare_ip_targets(message)
+    host = message.data.get("host")
+    if host is not None:
+        return _prepare_ip_targets(message, host)
     else:
         raise ValueError("Message is invalid.")

@@ -74,3 +74,29 @@ def testTsunamyFactory_whenPrepareMessages_prepareTarget(
     input_message: message.Message, expected: list[tools.Target]
 ) -> None:
     assert tools.prepare_targets(message=input_message, args={}) == expected
+
+
+def testPrepareTargets_whenIPv4AssetReachCIDRLimit_raiseValueError(
+    scan_message_ipv4_with_mask8: message.Message,
+) -> None:
+    with pytest.raises(ValueError, match="Subnet mask below 16 is not supported."):
+        tools.prepare_targets(message=scan_message_ipv4_with_mask8, args={})
+
+
+def testPrepareTargets_whenIPv4AssetDoesNotReachCIDRLimit_doesNotRaiseValueError(
+    scan_message_ipv4_with_mask16: message.Message,
+) -> None:
+    tools.prepare_targets(message=scan_message_ipv4_with_mask16, args={})
+
+
+def testPrepareTargets_whenIPv6AssetReachCIDRLimit_raiseValueError(
+    scan_message_ipv6_with_mask64: message.Message,
+) -> None:
+    with pytest.raises(ValueError, match="Subnet mask below 112 is not supported."):
+        tools.prepare_targets(message=scan_message_ipv6_with_mask64, args={})
+
+
+def testPrepareTargets_whenIPv6AssetDoesNotReachCIDRLimit_doesNotRaiseValueError(
+    scan_message_ipv6_with_mask112: message.Message,
+) -> None:
+    tools.prepare_targets(message=scan_message_ipv6_with_mask112, args={})
