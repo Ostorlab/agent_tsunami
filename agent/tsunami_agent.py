@@ -31,6 +31,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# severity mapping defined in https://github.com/google/tsunami-security-scanner/blob/master/proto/vulnerability.proto
+RISK_MAPPING = {
+    "CRITICAL": "CRITICAL",
+    "HIGH": "HIGH",
+    "MEDIUM": "MEDIUM",
+    "LOW": "LOW",
+    "MINIMAL": "INFO",
+    "SEVERITY_UNSPECIFIED": "POTENTIALLY",
+}
+
 
 class AgentTsunami(
     agent.Agent,
@@ -175,7 +185,7 @@ class AgentTsunami(
         vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation,
     ) -> None:
         # risk_rating will be HIGH for all detected vulnerabilities
-        risk_rating = "HIGH"
+        risk_rating = RISK_MAPPING[vulnerability["vulnerability"]["severity"]]
         self.report_vulnerability(
             entry=kb.Entry(
                 title=vulnerability["vulnerability"]["title"],
