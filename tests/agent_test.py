@@ -66,11 +66,12 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
                 "vulnerability": {
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
+                    "severity": "CRITICAL",
                 }
             }
         ],
     }
-    risk_rating = "HIGH"
+    risk_rating = "CRITICAL"
     description = "Ostorlab is not password protected"
     kb_entry = kb.Entry(
         title="Ostorlab Platform",
@@ -123,6 +124,7 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
                 "vulnerability": {
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
                 }
             }
         ],
@@ -185,6 +187,7 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
                 "vulnerability": {
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
                 }
             }
         ],
@@ -247,6 +250,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
                 "vulnerability": {
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
                 }
             }
         ],
@@ -347,6 +351,7 @@ def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
                 "vulnerability": {
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
                 }
             }
         ],
