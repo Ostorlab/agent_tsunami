@@ -205,7 +205,7 @@ class AgentTsunami(
             vulnerability_location=vuln_location,
         )
 
-    def _format_technical_detail(self, additional_details: list[dict[str, Any]]):
+    def _format_technical_detail(self, additional_details: list[dict[str, Any]]) -> str:
         technical_detail = ""
         for additional_detail in additional_details:
             if "textData" in additional_detail:
