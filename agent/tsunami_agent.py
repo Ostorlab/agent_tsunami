@@ -181,7 +181,6 @@ class AgentTsunami(
         vulnerability: dict[str, dict[str, Any]],
         vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation,
     ) -> None:
-        # risk_rating will be HIGH for all detected vulnerabilities
         risk_rating = RISK_MAPPING[vulnerability["vulnerability"]["severity"]]
         technical_detail = self._format_technical_detail(
             vulnerability["vulnerability"]["additionalDetails"]
