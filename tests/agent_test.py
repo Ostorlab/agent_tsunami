@@ -67,6 +67,13 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
                     "severity": "CRITICAL",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
                 }
             }
         ],
@@ -101,7 +108,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
 
     mock_report_vulnerability.assert_called_once_with(
         entry=kb_entry,
-        technical_detail=f"```json\n{data}\n```",
+        technical_detail="Vulnerable endpoint: 'http://35.81.162.201/heapdump'\n",
         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
             metadata=[], asset=ipv4_asset.IPv4(host="0.0.0.0", version=4, mask="32")
@@ -125,6 +132,13 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
                     "severity": "HIGH",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
                 }
             }
         ],
@@ -158,7 +172,7 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
 
     mock_report_vulnerability.assert_called_once_with(
         entry=kb_entry,
-        technical_detail=f"```json\n{data}\n```",
+        technical_detail="Vulnerable endpoint: 'http://35.81.162.201/heapdump'\n",
         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
             metadata=[
@@ -188,6 +202,13 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
                     "severity": "HIGH",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
                 }
             }
         ],
@@ -222,7 +243,7 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
 
     mock_report_vulnerability.assert_called_once_with(
         entry=kb_entry,
-        technical_detail=f"```json\n{data}\n```",
+        technical_detail="Vulnerable endpoint: 'http://35.81.162.201/heapdump'\n",
         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
             metadata=[
@@ -251,6 +272,13 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
                     "severity": "HIGH",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
                 }
             }
         ],
@@ -284,7 +312,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
 
     mock_report_vulnerability.assert_called_once_with(
         entry=kb_entry,
-        technical_detail=f"```json\n{data}\n```",
+        technical_detail="Vulnerable endpoint: 'http://35.81.162.201/heapdump'\n",
         risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
             metadata=[
@@ -352,6 +380,13 @@ def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
                     "title": "Ostorlab Platform",
                     "description": "Ostorlab is not password protected",
                     "severity": "HIGH",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
                 }
             }
         ],

@@ -90,9 +90,7 @@ class AgentTsunami(
                         len(scan_result.get("vulnerabilities", [])),
                     )
                     for vulnerability in scan_result.get("vulnerabilities", {}):
-                        self._report_vulnerability(
-                            vulnerability, scan_result, vuln_location
-                        )
+                        self._report_vulnerability(vulnerability, vuln_location)
 
         logger.info("done processing the message")
 
@@ -181,11 +179,13 @@ class AgentTsunami(
     def _report_vulnerability(
         self,
         vulnerability: dict[str, dict[str, Any]],
-        scan_result: dict[str, Any],
         vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation,
     ) -> None:
         # risk_rating will be HIGH for all detected vulnerabilities
         risk_rating = RISK_MAPPING[vulnerability["vulnerability"]["severity"]]
+        technical_detail = self._format_technical_detail(
+            vulnerability["vulnerability"]["additionalDetails"]
+        )
         self.report_vulnerability(
             entry=kb.Entry(
                 title=vulnerability["vulnerability"]["title"],
@@ -201,10 +201,28 @@ class AgentTsunami(
                 targeted_by_ransomware=True,
                 targeted_by_nation_state=True,
             ),
-            technical_detail=f"```json\n{scan_result}\n```",
+            technical_detail=technical_detail,
             risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
             vulnerability_location=vuln_location,
         )
+
+    def _format_technical_detail(self, additional_details: list[dict[str, Any]]):
+        technical_detail = ""
+        for additional_detail in additional_details:
+            if "textData" in additional_detail:
+                technical_detail += f"{additional_detail['textData']['text']}\n"
+            elif "credential" in additional_detail:
+                technical_detail += (
+                    f"The extracted credential for the vulnerable network service:"
+                    f" {additional_detail['credential']['username']}:{additional_detail['credential']['password']} \n"
+                )
+            elif "credentials" in additional_detail:
+                for credential in additional_detail["credentials"]:
+                    technical_detail += (
+                        f"The extracted credential for the vulnerable network service:"
+                        f" {credential['username']}:{credential['password']} \n"
+                    )
+        return technical_detail
 
 
 if __name__ == "__main__":
