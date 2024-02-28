@@ -182,9 +182,7 @@ class AgentTsunami(
         vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation,
     ) -> None:
         risk_rating = RISK_MAPPING[vulnerability["vulnerability"]["severity"]]
-        technical_detail = self._format_technical_detail(
-            vulnerability["vulnerability"]["additionalDetails"]
-        )
+        technical_detail = self._format_technical_detail(vulnerability["vulnerability"])
         self.report_vulnerability(
             entry=kb.Entry(
                 title=vulnerability["vulnerability"]["title"],
@@ -205,8 +203,9 @@ class AgentTsunami(
             vulnerability_location=vuln_location,
         )
 
-    def _format_technical_detail(self, additional_details: list[dict[str, Any]]) -> str:
+    def _format_technical_detail(self, vulnerability: dict[str, Any]) -> str:
         technical_detail = ""
+        additional_details = vulnerability.get("additionalDetails", [])
         for additional_detail in additional_details:
             if "textData" in additional_detail:
                 technical_detail += f"{additional_detail['textData']['text']}\n"
@@ -221,6 +220,9 @@ class AgentTsunami(
                         f"The extracted credential for the vulnerable network service:"
                         f" {credential['username']}:{credential['password']} \n"
                     )
+        if technical_detail == "":
+            technical_detail = (f"```json\n{additional_details}\n```",)
+
         return technical_detail
 
 
