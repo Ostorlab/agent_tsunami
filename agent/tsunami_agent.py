@@ -221,7 +221,7 @@ class AgentTsunami(
                         f" {credential['username']}:{credential['password']} \n"
                     )
         if technical_detail == "":
-            technical_detail = (f"```json\n{additional_details}\n```",)
+            technical_detail = f"```json\n{additional_details}\n```"
 
         return technical_detail
 
