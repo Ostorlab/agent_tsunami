@@ -75,7 +75,7 @@ class AgentTsunami(
 
         logger.debug("processing message of selector : %s", message.selector)
 
-        logger.info("Preparing targets.")
+        logger.info("Preparing targets ...")
         targets = tools.prepare_targets(message=message, args=self.args)
 
         if self._should_process_target(message=message, target=targets[0]) is True:
