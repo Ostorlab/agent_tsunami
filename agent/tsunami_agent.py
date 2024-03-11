@@ -75,9 +75,11 @@ class AgentTsunami(
 
         logger.debug("processing message of selector : %s", message.selector)
 
+        logger.info("Preparing targets.")
         targets = tools.prepare_targets(message=message, args=self.args)
 
         if self._should_process_target(message=message, target=targets[0]) is True:
+            logger.info("Scanning targets `%s`.", targets)
             for target in targets:
                 if target.domain is not None:
                     if self._check_asset_was_added(target) is True:
@@ -87,7 +89,7 @@ class AgentTsunami(
 
                     scan_result = tsunami_scanner.scan(target=target)
                     logger.info(
-                        "found %d vulnerabilities",
+                        "Found %d vulnerabilities.",
                         len(scan_result.get("vulnerabilities", [])),
                     )
                     for vulnerability in scan_result.get("vulnerabilities", {}):
