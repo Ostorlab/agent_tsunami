@@ -1,4 +1,5 @@
 """Simple wrapper for tsunami scanner."""
+
 import json
 import logging
 import subprocess
@@ -94,7 +95,7 @@ class Tsunami:
                 and "scanFindings" in tsunami_result.keys()
             ):
                 json_result["status"] = "success"
-                logger.info("scan status: SUCCEEDED")
+                logger.debug("scan status: SUCCEEDED")
                 for vul in tsunami_result["scanFindings"]:
                     json_result["vulnerabilities"].append(vul)
             else:

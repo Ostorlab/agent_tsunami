@@ -1,4 +1,5 @@
 """Test VPN setup."""
+
 import io
 import subprocess
 from unittest.mock import mock_open

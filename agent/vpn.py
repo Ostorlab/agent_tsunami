@@ -1,4 +1,5 @@
 """Setup and start vpn"""
+
 import datetime
 import logging
 import pathlib

@@ -1,4 +1,5 @@
 """Module for preparing tsunami targets."""
+
 import dataclasses
 import ipaddress
 import logging
