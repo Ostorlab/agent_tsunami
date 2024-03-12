@@ -95,7 +95,7 @@ class AgentTsunami(
                     for vulnerability in scan_result.get("vulnerabilities", {}):
                         self._report_vulnerability(vulnerability, vuln_location)
 
-        logger.debug("done processing the message")
+        logger.info("Done scanning targets.")
 
     def _check_asset_was_added(self, targets: tools.Target) -> bool:
         """Check if the asset was scanned before or not"""
