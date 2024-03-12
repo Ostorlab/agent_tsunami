@@ -1,4 +1,5 @@
 """Unit test for factory tools."""
+
 import pytest
 import ipaddress
 

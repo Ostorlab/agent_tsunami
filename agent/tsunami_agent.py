@@ -1,4 +1,5 @@
 """Agent implementation for tsunami scanner."""
+
 import ipaddress
 import logging
 import re
@@ -72,11 +73,13 @@ class AgentTsunami(
         Args:
             message:  The message to process from ostorlab runtime."""
 
-        logger.info("processing message of selector : %s", message.selector)
+        logger.debug("processing message of selector : %s", message.selector)
 
+        logger.info("Preparing targets ...")
         targets = tools.prepare_targets(message=message, args=self.args)
 
         if self._should_process_target(message=message, target=targets[0]) is True:
+            logger.info("Scanning targets `%s`.", targets)
             for target in targets:
                 if target.domain is not None:
                     if self._check_asset_was_added(target) is True:
@@ -86,19 +89,19 @@ class AgentTsunami(
 
                     scan_result = tsunami_scanner.scan(target=target)
                     logger.info(
-                        "found %d vulnerabilities",
+                        "Found %d vulnerabilities.",
                         len(scan_result.get("vulnerabilities", [])),
                     )
                     for vulnerability in scan_result.get("vulnerabilities", {}):
                         self._report_vulnerability(vulnerability, vuln_location)
 
-        logger.info("done processing the message")
+        logger.info("Done scanning targets.")
 
     def _check_asset_was_added(self, targets: tools.Target) -> bool:
         """Check if the asset was scanned before or not"""
         if targets.domain is not None:
             if self.set_add(b"agent_tsunami", f"{targets.domain}"):
-                logger.info("target %s/ was processed before, exiting", targets.domain)
+                logger.debug("target %s/ was processed before, exiting", targets.domain)
                 return False
         return True
 
@@ -134,7 +137,7 @@ class AgentTsunami(
         else:
             addresses = ipaddress.ip_network(f"{host}")
         if self.add_ip_network("agent_tsunami", addresses) is False:
-            logger.info("target %s was processed before, exiting", addresses)
+            logger.debug("target %s was processed before, exiting", addresses)
             return False
         return True
 
@@ -146,7 +149,12 @@ class AgentTsunami(
             target: domaine-name or ipv4 or ipv6
         """
         metadata = []
-        asset: ipv4_asset.IPv4 | ipv6_asset.IPv6 | link_asset.Link | domain_asset.DomainName
+        asset: (
+            ipv4_asset.IPv4
+            | ipv6_asset.IPv6
+            | link_asset.Link
+            | domain_asset.DomainName
+        )
         if target.address is not None:
             if target.version == "v4":
                 asset = ipv4_asset.IPv4(host=target.address, version=4, mask="32")

@@ -1,4 +1,5 @@
 """Unittests for tsunami class."""
+
 from typing import List
 import json
 
