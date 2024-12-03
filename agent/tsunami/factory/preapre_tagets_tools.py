@@ -69,7 +69,7 @@ def _get_ip_version(message: msg.Message) -> int | None:
         ip = ipaddress.ip_address(host)
         version = ip.version
     except ValueError:
-        raise ValueError(f"Invalid IP address: {host}")
+        return None
     return int(version)
 
 
@@ -78,14 +78,17 @@ def _prepare_ip_targets(message: msg.Message, host: str) -> list[Target]:
     ip_version = _get_ip_version(message)
     if ip_version == 6:
         if mask is not None and int(mask) < IPV6_CIDR_LIMIT:
-            raise ValueError(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
+            logging.error(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
+            return []
         version = "v6"
     elif ip_version == 4:
         if mask is not None and int(mask) < IPV4_CIDR_LIMIT:
-            raise ValueError(f"Subnet mask below {IPV4_CIDR_LIMIT} is not supported.")
+            logging.error(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
+            return []
         version = "v4"
     else:
-        raise ValueError(f"Incorrect ip version {ip_version}")
+        logging.error(f"Incorrect ip version {ip_version}")
+        return []
     try:
         if mask is None:
             ip_network = ipaddress.ip_network(host)
