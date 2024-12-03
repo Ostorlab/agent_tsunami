@@ -77,7 +77,9 @@ class AgentTsunami(
 
         logger.info("Preparing targets ...")
         targets = tools.prepare_targets(message=message, args=self.args)
-
+        if targets is None or len(targets) == 0:
+            logger.info("Invalid target message %s", message)
+            return
         if self._should_process_target(message=message, target=targets[0]) is True:
             logger.info("Scanning targets `%s`.", targets)
             for target in targets:

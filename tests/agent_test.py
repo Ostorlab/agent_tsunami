@@ -2,7 +2,6 @@
 
 from typing import List
 
-import pytest
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
@@ -14,8 +13,9 @@ from agent import tsunami_agent as ts_agt
 from agent.tsunami.factory import preapre_tagets_tools as tools
 
 
-def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorException(
+def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldNotCrash(
     tsunami_agent: ts_agt.AgentTsunami,
+    agent_mock: List[message.Message],
 ) -> None:
     """Test Tsunami agent when receiving a message with invalid ip version.
     Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
@@ -25,8 +25,9 @@ def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldRaiseValueErrorExcept
         selector="v3.asset.ip.v4", data={"version": 15631, "host": "0.0.0.0"}
     )
 
-    with pytest.raises(ValueError):
-        tsunami_agent.process(msg)
+    tsunami_agent.process(msg)
+
+    assert len(agent_mock) == 0
 
 
 def testTsunamiAgent_WhenTsunamiScanIsCalled_ShouldRaiseValueErrorException(
@@ -398,3 +399,53 @@ def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
     assert agent_mock[0].data["vulnerability_location"] == {
         "ipv4": {"host": "42.42.42.42", "mask": "32", "version": 4}
     }
+
+
+def testAgentTsunami_whenIpNoVersion_shouldNotCrash(
+    tsunami_agent_no_scope: ts_agt.AgentTsunami,
+    agent_mock: List[message.Message],
+    mocker: plugin.MockerFixture,
+) -> None:
+    data = {
+        "scanStatus": "SUCCEEDED",
+        "vulnerabilities": [
+            {
+                "vulnerability": {
+                    "title": "Ostorlab Platform",
+                    "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
+                }
+            }
+        ],
+    }
+    mocker.patch("agent.tsunami.tsunami.Tsunami.scan", return_value=data)
+    tsunami_agent_no_scope.process(
+        message.Message.from_data(
+            "v3.asset.ip.v4", data={"host": "34.141.29.206", "mask": "32"}
+        )
+    )
+
+    assert "v3.report.vulnerability" in [a.selector for a in agent_mock]
+    assert agent_mock[0].data["vulnerability_location"] == {
+        "ipv4": {"host": "34.141.29.206", "mask": "32", "version": 4}
+    }
+
+
+def testAgentTsunami_whenIpNoTValid_shouldRaiseValueError(
+    tsunami_agent_no_scope: ts_agt.AgentTsunami,
+    agent_mock: List[message.Message],
+) -> None:
+    invalid_ip = message.Message.from_data(
+        "v3.asset.ip.v4", data={"host": "34.141.29", "mask": "32"}
+    )
+
+    tsunami_agent_no_scope.process(invalid_ip)
+
+    assert len(agent_mock) == 0
