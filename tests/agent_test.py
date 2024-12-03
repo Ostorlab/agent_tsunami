@@ -398,3 +398,40 @@ def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
     assert agent_mock[0].data["vulnerability_location"] == {
         "ipv4": {"host": "42.42.42.42", "mask": "32", "version": 4}
     }
+
+
+def testAgentTsunami_whenIpNoVersion_shouldNotCrash(
+    tsunami_agent_no_scope: ts_agt.AgentTsunami,
+    agent_mock: List[message.Message],
+    mocker: plugin.MockerFixture,
+) -> None:
+    data = {
+        "scanStatus": "SUCCEEDED",
+        "vulnerabilities": [
+            {
+                "vulnerability": {
+                    "title": "Ostorlab Platform",
+                    "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
+                    "additionalDetails": [
+                        {
+                            "textData": {
+                                "text": "Vulnerable endpoint: 'http://35.81.162.201/heapdump'"
+                            }
+                        }
+                    ],
+                }
+            }
+        ],
+    }
+    mocker.patch("agent.tsunami.tsunami.Tsunami.scan", return_value=data)
+    tsunami_agent_no_scope.process(
+        message.Message.from_data(
+            "v3.asset.ip.v4", data={"host": "34.141.29.206", "mask": "32"}
+        )
+    )
+
+    assert "v3.report.vulnerability" in [a.selector for a in agent_mock]
+    assert agent_mock[0].data["vulnerability_location"] == {
+        "ipv4": {"host": "34.141.29.206", "mask": "32", "version": 4}
+    }

@@ -57,19 +57,35 @@ def _prepare_url_target(message: msg.Message) -> Target:
     return Target(domain=str(parse.urlparse(link).netloc), url=link)
 
 
+def _get_ip_version(message: msg.Message) -> int | None:
+    """Returns the version of the IP address."""
+    version = message.data.get("version")
+    if version is not None:
+        return int(version)
+    host = message.data.get("host")
+    if host is None:
+        return None
+    try:
+        ip = ipaddress.ip_address(host)
+        version = ip.version
+    except ValueError:
+        raise ValueError(f"Invalid IP address: {host}")
+    return int(version)
+
+
 def _prepare_ip_targets(message: msg.Message, host: str) -> list[Target]:
     mask = message.data.get("mask")
-    version = message.data.get("version")
-    if version == 6:
+    ip_version = _get_ip_version(message)
+    if ip_version == 6:
         if mask is not None and int(mask) < IPV6_CIDR_LIMIT:
             raise ValueError(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
         version = "v6"
-    elif version == 4:
+    elif ip_version == 4:
         if mask is not None and int(mask) < IPV4_CIDR_LIMIT:
             raise ValueError(f"Subnet mask below {IPV4_CIDR_LIMIT} is not supported.")
         version = "v4"
     else:
-        raise ValueError(f"Incorrect ip version {version}")
+        raise ValueError(f"Incorrect ip version {ip_version}")
     try:
         if mask is None:
             ip_network = ipaddress.ip_network(host)
