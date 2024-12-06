@@ -8,7 +8,7 @@ import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
-from ostorlab.utils import defintions
+from ostorlab.utils import definitions
 
 from agent import tsunami_agent
 
@@ -25,12 +25,12 @@ def fixture_tsunami_agent_with_vpn(
             key="agent/ostorlab/tsunami",
             redis_url="redis://guest:guest@localhost:6379",
             args=[
-                defintions.Arg(
+                definitions.Arg(
                     name="vpn_config",
                     type="string",
                     value=json.dumps("FAKE_VPN_CONFIG").encode(),
                 ),
-                defintions.Arg(
+                definitions.Arg(
                     name="dns_config",
                     type="string",
                     value=json.dumps("FAKE_DNS_CONFIG").encode(),
