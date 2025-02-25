@@ -246,15 +246,15 @@ class AgentTsunami(
         credentials = []
         for additional_detail in additional_details:
             if "textData" in additional_detail:
-                credentials.append(additional_detail["textData"]["text"])
+                credentials.append(additional_detail.get("textData", {}).get("text"))
             elif "credential" in additional_detail:
                 credentials.append(
-                    f"{additional_detail['credential']['username']}{additional_detail['credential']['password']}"
+                    f"{additional_detail('credential', {}).get('username')}{additional_detail('credential', {}).get('password')}"
                 )
             elif "credentials" in additional_detail:
-                for credential in additional_detail["credentials"]:
+                for credential in additional_detail.get("credentials"):
                     credentials.append(
-                        f"{credential['username']}:{credential['password']}"
+                        f"{credential.get('username')}:{credential.get('password')}"
                     )
 
         return credentials
