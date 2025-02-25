@@ -215,6 +215,7 @@ class AgentTsunami(
             dna=_compute_dna(
                 vuln_title=vulnerability["vulnerability"]["title"],
                 vuln_location=vuln_location,
+                credentials=self.get_credentials(vulnerability["vulnerability"]),
             ),
         )
 
@@ -240,15 +241,35 @@ class AgentTsunami(
 
         return technical_detail
 
+    def get_credentials(self, vulnerability: dict[str, Any]) -> list[str]:
+        additional_details = vulnerability.get("additionalDetails", [])
+        credentials = []
+        for additional_detail in additional_details:
+            if "textData" in additional_detail:
+                credentials.append(additional_detail["textData"]["text"])
+            elif "credential" in additional_detail:
+                credentials.append(
+                    f"{additional_detail['credential']['username']}{additional_detail['credential']['password']}"
+                )
+            elif "credentials" in additional_detail:
+                for credential in additional_detail["credentials"]:
+                    credentials.append(
+                        f"{credential['username']}:{credential['password']}"
+                    )
+
+        return credentials
+
 
 def _compute_dna(
     vuln_title: str,
     vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation | None,
+    credentials: list[str],
 ) -> str:
     """Compute a deterministic, debuggable DNA representation for a vulnerability.
     Args:
         vuln_title: The title of the vulnerability.
         vuln_location: The location of the vulnerability.
+        credentials: The location of the vulnerability.
     Returns:
         A deterministic JSON representation of the vulnerability DNA.
     """
@@ -258,6 +279,9 @@ def _compute_dna(
         location_dict: dict[str, Any] = vuln_location.to_dict()
         sorted_location_dict = _sort_dict(location_dict)
         dna_data["location"] = sorted_location_dict
+
+    if credentials is not None:
+        dna_data["credentials"] = credentials
 
     return json.dumps(dna_data, sort_keys=True)
 
