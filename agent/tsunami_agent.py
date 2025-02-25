@@ -1,6 +1,7 @@
 """Agent implementation for tsunami scanner."""
 
 import ipaddress
+import json
 import logging
 import re
 import urllib
@@ -211,6 +212,10 @@ class AgentTsunami(
             technical_detail=technical_detail,
             risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
             vulnerability_location=vuln_location,
+            dna=_compute_dna(
+                vuln_title=vulnerability["vulnerability"]["title"],
+                vuln_location=vuln_location,
+            ),
         )
 
     def _format_technical_detail(self, vulnerability: dict[str, Any]) -> str:
@@ -234,6 +239,46 @@ class AgentTsunami(
             technical_detail = f"```json\n{additional_details}\n```"
 
         return technical_detail
+
+
+def _compute_dna(
+    vuln_title: str,
+    vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation | None,
+) -> str:
+    """Compute a deterministic, debuggable DNA representation for a vulnerability.
+    Args:
+        vuln_title: The title of the vulnerability.
+        vuln_location: The location of the vulnerability.
+    Returns:
+        A deterministic JSON representation of the vulnerability DNA.
+    """
+    dna_data: dict[str, Any] = {"title": vuln_title}
+
+    if vuln_location is not None:
+        location_dict: dict[str, Any] = vuln_location.to_dict()
+        sorted_location_dict = _sort_dict(location_dict)
+        dna_data["location"] = sorted_location_dict
+
+    return json.dumps(dna_data, sort_keys=True)
+
+
+def _sort_dict(d: dict[str, Any] | list[Any]) -> dict[str, Any] | list[Any]:
+    """Recursively sort dictionary keys and lists within.
+    Args:
+        d: The dictionary or list to sort.
+    Returns:
+        A sorted dictionary or list.
+    """
+    if isinstance(d, dict):
+        return {k: _sort_dict(v) for k, v in sorted(d.items())}
+    if isinstance(d, list):
+        return sorted(
+            d,
+            key=lambda x: json.dumps(x, sort_keys=True)
+            if isinstance(x, dict)
+            else str(x),
+        )
+    return d
 
 
 if __name__ == "__main__":

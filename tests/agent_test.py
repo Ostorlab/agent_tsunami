@@ -114,6 +114,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
             metadata=[], asset=ipv4_asset.IPv4(host="0.0.0.0", version=4, mask="32")
         ),
+        dna='{"location": {"ipv4": {"host": "0.0.0.0", "mask": "32", "version": 4}, "metadata": []}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -184,6 +185,7 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
             ],
             asset=domain_asset.DomainName(name="ostorlab.co"),
         ),
+        dna='{"location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -254,6 +256,7 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
             ],
             asset=domain_asset.DomainName(name="ostorlab.co"),
         ),
+        dna='{"location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "PORT", "value": "6000"}]}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -324,6 +327,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
             ],
             asset=domain_asset.DomainName(name="ostorlab.co"),
         ),
+        dna='{"location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
     )
 
 
