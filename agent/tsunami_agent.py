@@ -215,7 +215,7 @@ class AgentTsunami(
             dna=_compute_dna(
                 vuln_title=vulnerability["vulnerability"]["title"],
                 vuln_location=vuln_location,
-                credentials=self._get_credentials(vulnerability["vulnerability"]),
+                details=self._get_credentials(vulnerability["vulnerability"]),
             ),
         )
 
@@ -241,12 +241,12 @@ class AgentTsunami(
 
         return technical_detail
 
-    def _get_credentials(self, vulnerability: dict[str, Any]) -> list[str]:
+    def _get_credentials(self, vulnerability: dict[str, Any]) -> dict[str, Any]:
         additional_details = vulnerability.get("additionalDetails", [])
         credentials = []
         for additional_detail in additional_details:
             if "textData" in additional_detail:
-                credentials.append(additional_detail.get("textData", {}).get("text"))
+                return {"endpoint": additional_detail.get("textData", {}).get("text")}
             elif "credential" in additional_detail:
                 credentials.append(
                     f"{additional_detail.get('credential', {}).get('username')}:{additional_detail.get('credential', {}).get('password')}"
@@ -257,19 +257,19 @@ class AgentTsunami(
                         f"{credential.get('username')}:{credential.get('password')}"
                     )
 
-        return credentials
+        return {"credentials": credentials}
 
 
 def _compute_dna(
     vuln_title: str,
     vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation | None,
-    credentials: list[str],
+    details: dict[str, Any] | None,
 ) -> str:
     """Compute a deterministic, debuggable DNA representation for a vulnerability.
     Args:
         vuln_title: The title of the vulnerability.
         vuln_location: The location of the vulnerability.
-        credentials: The location of the vulnerability.
+        details: The tsunami result details.
     Returns:
         A deterministic JSON representation of the vulnerability DNA.
     """
@@ -280,8 +280,8 @@ def _compute_dna(
         sorted_location_dict = _sort_dict(location_dict)
         dna_data["location"] = sorted_location_dict
 
-    if credentials is not None:
-        dna_data["credentials"] = credentials
+    if details is not None:
+        dna_data.update(details)
 
     return json.dumps(dna_data, sort_keys=True)
 
