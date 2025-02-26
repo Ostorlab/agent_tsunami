@@ -248,19 +248,20 @@ class AgentTsunami(
     ) -> dict[str, Any]:
         additional_details = vulnerability.get("additionalDetails", [])
         credentials = []
-        for additional_detail in additional_details:
-            if "textData" in additional_detail:
-                return {"endpoint": additional_detail.get("textData", {}).get("text")}
-            elif "credential" in additional_detail:
-                credentials.append(
-                    f"{additional_detail.get('credential', {}).get('username')}:{additional_detail.get('credential', {}).get('password')}"
-                )
-            elif "credentials" in additional_detail:
-                for credential in additional_detail.get("credentials"):
-                    credentials.append(
-                        f"{credential.get('username')}:{credential.get('password')}"
-                    )
 
+        for detail in additional_details:
+            if detail.get("textData", {}).get("text") is not None:
+                return {"endpoint": detail.get("textData", {}).get("text")}
+
+            if detail.get("credential") is not None:
+                credentials.append(
+                    f"{detail.get('credential').get('username', '')}:{detail.get('credential').get('password', '')}"
+                )
+
+            for credential in detail.get("credentials", []):
+                credentials.append(
+                    f"{credential.get('username', '')}:{credential.get('password', '')}"
+                )
         return {"credentials": credentials}
 
 
