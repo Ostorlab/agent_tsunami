@@ -215,7 +215,7 @@ class AgentTsunami(
             dna=_compute_dna(
                 vuln_title=vulnerability["vulnerability"]["title"],
                 vuln_location=vuln_location,
-                credentials=self.get_credentials(vulnerability["vulnerability"]),
+                credentials=self._get_credentials(vulnerability["vulnerability"]),
             ),
         )
 
@@ -241,7 +241,7 @@ class AgentTsunami(
 
         return technical_detail
 
-    def get_credentials(self, vulnerability: dict[str, Any]) -> list[str]:
+    def _get_credentials(self, vulnerability: dict[str, Any]) -> list[str]:
         additional_details = vulnerability.get("additionalDetails", [])
         credentials = []
         for additional_detail in additional_details:
@@ -249,7 +249,7 @@ class AgentTsunami(
                 credentials.append(additional_detail.get("textData", {}).get("text"))
             elif "credential" in additional_detail:
                 credentials.append(
-                    f"{additional_detail('credential', {}).get('username')}{additional_detail('credential', {}).get('password')}"
+                    f"{additional_detail.get('credential', {}).get('username')}:{additional_detail.get('credential', {}).get('password')}"
                 )
             elif "credentials" in additional_detail:
                 for credential in additional_detail.get("credentials"):
