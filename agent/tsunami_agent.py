@@ -215,7 +215,9 @@ class AgentTsunami(
             dna=_compute_dna(
                 vuln_title=vulnerability["vulnerability"]["title"],
                 vuln_location=vuln_location,
-                details=self._get_credentials(vulnerability["vulnerability"]),
+                details=self._extract_vulnerability_data(
+                    vulnerability["vulnerability"]
+                ),
             ),
         )
 
@@ -241,7 +243,9 @@ class AgentTsunami(
 
         return technical_detail
 
-    def _get_credentials(self, vulnerability: dict[str, Any]) -> dict[str, Any]:
+    def _extract_vulnerability_data(
+        self, vulnerability: dict[str, Any]
+    ) -> dict[str, Any]:
         additional_details = vulnerability.get("additionalDetails", [])
         credentials = []
         for additional_detail in additional_details:
