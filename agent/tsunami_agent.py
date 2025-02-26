@@ -215,6 +215,9 @@ class AgentTsunami(
             dna=_compute_dna(
                 vuln_title=vulnerability["vulnerability"]["title"],
                 vuln_location=vuln_location,
+                details=self._extract_vulnerability_data(
+                    vulnerability["vulnerability"]
+                ),
             ),
         )
 
@@ -240,15 +243,38 @@ class AgentTsunami(
 
         return technical_detail
 
+    def _extract_vulnerability_data(
+        self, vulnerability: dict[str, Any]
+    ) -> dict[str, Any]:
+        additional_details = vulnerability.get("additionalDetails", [])
+        credentials = []
+
+        for detail in additional_details:
+            if detail.get("textData", {}).get("text") is not None:
+                return {"endpoint": detail.get("textData", {}).get("text")}
+
+            if detail.get("credential") is not None:
+                credentials.append(
+                    f"{detail.get('credential').get('username', '')}:{detail.get('credential').get('password', '')}"
+                )
+
+            for credential in detail.get("credentials", []):
+                credentials.append(
+                    f"{credential.get('username', '')}:{credential.get('password', '')}"
+                )
+        return {"credentials": credentials}
+
 
 def _compute_dna(
     vuln_title: str,
     vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation | None,
+    details: dict[str, Any] | None,
 ) -> str:
     """Compute a deterministic, debuggable DNA representation for a vulnerability.
     Args:
         vuln_title: The title of the vulnerability.
         vuln_location: The location of the vulnerability.
+        details: The tsunami result details.
     Returns:
         A deterministic JSON representation of the vulnerability DNA.
     """
@@ -258,6 +284,9 @@ def _compute_dna(
         location_dict: dict[str, Any] = vuln_location.to_dict()
         sorted_location_dict = _sort_dict(location_dict)
         dna_data["location"] = sorted_location_dict
+
+    if details is not None:
+        dna_data.update(details)
 
     return json.dumps(dna_data, sort_keys=True)
 
