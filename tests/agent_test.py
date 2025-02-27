@@ -114,7 +114,7 @@ def testTsunamiAgent_WhenTsunamiScanHasVulnerabilities_ShouldReportVulnerabiliti
         vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
             metadata=[], asset=ipv4_asset.IPv4(host="0.0.0.0", version=4, mask="32")
         ),
-        dna='{"location": {"ipv4": {"host": "0.0.0.0", "mask": "32", "version": 4}, "metadata": []}, "title": "Ostorlab Platform"}',
+        dna='{"endpoint": "Vulnerable endpoint: \'http://35.81.162.201/heapdump\'", "location": {"ipv4": {"host": "0.0.0.0", "mask": "32", "version": 4}, "metadata": []}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -185,7 +185,7 @@ def testTsunamiAgent_WhenLinkAssetAndTsunamiScanHasVulnerabilities_ShouldReportV
             ],
             asset=domain_asset.DomainName(name="ostorlab.co"),
         ),
-        dna='{"location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
+        dna='{"endpoint": "Vulnerable endpoint: \'http://35.81.162.201/heapdump\'", "location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -256,7 +256,7 @@ def testTsunamiAgent_WhenServiceAssetAndTsunamiScanHasVulnerabilities_ShouldRepo
             ],
             asset=domain_asset.DomainName(name="ostorlab.co"),
         ),
-        dna='{"location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "PORT", "value": "6000"}]}, "title": "Ostorlab Platform"}',
+        dna='{"endpoint": "Vulnerable endpoint: \'http://35.81.162.201/heapdump\'", "location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "PORT", "value": "6000"}]}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -327,7 +327,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasVulnerabilities_ShouldR
             ],
             asset=domain_asset.DomainName(name="ostorlab.co"),
         ),
-        dna='{"location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
+        dna='{"endpoint": "Vulnerable endpoint: \'http://35.81.162.201/heapdump\'", "location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
     )
 
 
@@ -453,3 +453,137 @@ def testAgentTsunami_whenIpNoTValid_shouldRaiseValueError(
     tsunami_agent_no_scope.process(invalid_ip)
 
     assert len(agent_mock) == 0
+
+
+def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasCredVulnerabilities_shouldReportVulnerabilities(
+    mocker: plugin.MockerFixture, tsunami_agent: ts_agt.AgentTsunami
+) -> None:
+    """Test Tsunami agent when vulnerabilities are detected.
+    Tsunami supports ipv4, ipv6 and hostname (domain), therefore every received message
+    should have a valid ip version, other-ways the agent should raise a ValueError exception.
+    """
+
+    data = {
+        "scanStatus": "SUCCEEDED",
+        "vulnerabilities": [
+            {
+                "vulnerability": {
+                    "title": "Ostorlab Platform",
+                    "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
+                    "additionalDetails": [
+                        {"credential": {"username": "user", "password": "password"}}
+                    ],
+                }
+            }
+        ],
+    }
+    risk_rating = "HIGH"
+    description = "Ostorlab is not password protected"
+    kb_entry = kb.Entry(
+        title="Ostorlab Platform",
+        risk_rating=risk_rating,
+        short_description=description,
+        description=description,
+        recommendation="",
+        references={},
+        security_issue=True,
+        privacy_issue=False,
+        has_public_exploit=True,
+        targeted_by_malware=True,
+        targeted_by_ransomware=True,
+        targeted_by_nation_state=True,
+    )
+
+    mocker.patch("agent.tsunami.tsunami.Tsunami.scan", return_value=data)
+    mock_report_vulnerability = mocker.patch(
+        "agent.tsunami_agent.AgentTsunami.report_vulnerability", return_value=None
+    )
+    msg = message.Message.from_data(
+        selector="v3.asset.domain_name", data={"name": "ostorlab.co"}
+    )
+
+    tsunami_agent.process(msg)
+
+    mock_report_vulnerability.assert_called_once_with(
+        entry=kb_entry,
+        technical_detail="The extracted credential for the vulnerable network service: user:password \n",
+        risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+        vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
+            metadata=[
+                agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(
+                    agent_report_vulnerability_mixin.MetadataType.URL,
+                    "http://ostorlab.co",
+                )
+            ],
+            asset=domain_asset.DomainName(name="ostorlab.co"),
+        ),
+        dna='{"credentials": ["user:password"], "location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
+    )
+
+
+def testTsunamiAgent_whenDomainNameAssetAndTsunamiScanHasCredsVulnerabilities_shouldReportVulnerabilities(
+    mocker: plugin.MockerFixture, tsunami_agent: ts_agt.AgentTsunami
+) -> None:
+    """Test Tsunami agent when vulnerabilities are detected.
+    Tsunami supports ipv4, ipv6 and hostname (domain), therefore every received message
+    should have a valid ip version, other-ways the agent should raise a ValueError exception.
+    """
+
+    data = {
+        "scanStatus": "SUCCEEDED",
+        "vulnerabilities": [
+            {
+                "vulnerability": {
+                    "title": "Ostorlab Platform",
+                    "description": "Ostorlab is not password protected",
+                    "severity": "HIGH",
+                    "additionalDetails": [
+                        {"credentials": [{"username": "user", "password": "password"}]}
+                    ],
+                }
+            }
+        ],
+    }
+    risk_rating = "HIGH"
+    description = "Ostorlab is not password protected"
+    kb_entry = kb.Entry(
+        title="Ostorlab Platform",
+        risk_rating=risk_rating,
+        short_description=description,
+        description=description,
+        recommendation="",
+        references={},
+        security_issue=True,
+        privacy_issue=False,
+        has_public_exploit=True,
+        targeted_by_malware=True,
+        targeted_by_ransomware=True,
+        targeted_by_nation_state=True,
+    )
+
+    mocker.patch("agent.tsunami.tsunami.Tsunami.scan", return_value=data)
+    mock_report_vulnerability = mocker.patch(
+        "agent.tsunami_agent.AgentTsunami.report_vulnerability", return_value=None
+    )
+    msg = message.Message.from_data(
+        selector="v3.asset.domain_name", data={"name": "ostorlab.co"}
+    )
+
+    tsunami_agent.process(msg)
+
+    mock_report_vulnerability.assert_called_once_with(
+        entry=kb_entry,
+        technical_detail="The extracted credential for the vulnerable network service: user:password \n",
+        risk_rating=agent_report_vulnerability_mixin.RiskRating.HIGH,
+        vulnerability_location=agent_report_vulnerability_mixin.VulnerabilityLocation(
+            metadata=[
+                agent_report_vulnerability_mixin.VulnerabilityLocationMetadata(
+                    agent_report_vulnerability_mixin.MetadataType.URL,
+                    "http://ostorlab.co",
+                )
+            ],
+            asset=domain_asset.DomainName(name="ostorlab.co"),
+        ),
+        dna='{"credentials": ["user:password"], "location": {"domain_name": {"name": "ostorlab.co"}, "metadata": [{"type": "URL", "value": "http://ostorlab.co"}]}, "title": "Ostorlab Platform"}',
+    )
