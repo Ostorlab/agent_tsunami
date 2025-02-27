@@ -245,7 +245,7 @@ class AgentTsunami(
 
     def _extract_vulnerability_data(
         self, vulnerability: dict[str, Any]
-    ) -> dict[str, Any]:
+    ) -> dict[str, str | list[str]]:
         additional_details = vulnerability.get("additionalDetails", [])
         endpoint = self._extract_endpoint(additional_details)
         if endpoint is not None:
