@@ -455,7 +455,7 @@ def testAgentTsunami_whenIpNoTValid_shouldRaiseValueError(
     assert len(agent_mock) == 0
 
 
-def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasCredVulnerabilities_ShouldReportVulnerabilities(
+def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasCredVulnerabilities_shouldReportVulnerabilities(
     mocker: plugin.MockerFixture, tsunami_agent: ts_agt.AgentTsunami
 ) -> None:
     """Test Tsunami agent when vulnerabilities are detected.
