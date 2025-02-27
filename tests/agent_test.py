@@ -522,7 +522,7 @@ def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasCredVulnerabilities_Sho
     )
 
 
-def testTsunamiAgent_WhenDomainNameAssetAndTsunamiScanHasCredsVulnerabilities_ShouldReportVulnerabilities(
+def testTsunamiAgent_whenDomainNameAssetAndTsunamiScanHasCredsVulnerabilities_shouldReportVulnerabilities(
     mocker: plugin.MockerFixture, tsunami_agent: ts_agt.AgentTsunami
 ) -> None:
     """Test Tsunami agent when vulnerabilities are detected.
