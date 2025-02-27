@@ -247,22 +247,46 @@ class AgentTsunami(
         self, vulnerability: dict[str, Any]
     ) -> dict[str, Any]:
         additional_details = vulnerability.get("additionalDetails", [])
+        endpoint = self._extract_endpoint(additional_details)
+        if endpoint is not None:
+            return {"endpoint": endpoint}
+
+        credentials = self._extract_credentials(additional_details)
+        return {"credentials": credentials}
+
+    def _extract_endpoint(
+        self, additional_details: list[dict[str, dict[str, str]]]
+    ) -> str | None:
+        for detail in additional_details:
+            text_data: dict[str, str] = detail.get("textData", {})
+            if text := text_data.get("text"):
+                return text
+        return None
+
+    def _extract_credentials(
+        self, additional_details: list[dict[str, Any]]
+    ) -> list[str]:
         credentials = []
 
         for detail in additional_details:
-            if detail.get("textData", {}).get("text") is not None:
-                return {"endpoint": detail.get("textData", {}).get("text")}
-
-            if detail.get("credential") is not None:
+            if credential := detail.get("credential"):
                 credentials.append(
-                    f"{detail.get('credential').get('username', '')}:{detail.get('credential').get('password', '')}"
+                    self._format_credential(
+                        credential.get("username", ""), credential.get("password", "")
+                    )
                 )
 
             for credential in detail.get("credentials", []):
                 credentials.append(
-                    f"{credential.get('username', '')}:{credential.get('password', '')}"
+                    self._format_credential(
+                        credential.get("username", ""), credential.get("password", "")
+                    )
                 )
-        return {"credentials": credentials}
+
+        return credentials
+
+    def _format_credential(self, username: str, password: str) -> str:
+        return f"{username}:{password}"
 
 
 def _compute_dna(
