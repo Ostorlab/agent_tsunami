@@ -215,6 +215,9 @@ class AgentTsunami(
             dna=_compute_dna(
                 vuln_title=vulnerability["vulnerability"]["title"],
                 vuln_location=vuln_location,
+                details=self._extract_vulnerability_data(
+                    vulnerability["vulnerability"]
+                ),
             ),
         )
 
@@ -240,15 +243,62 @@ class AgentTsunami(
 
         return technical_detail
 
+    def _extract_vulnerability_data(
+        self, vulnerability: dict[str, Any]
+    ) -> dict[str, str | list[str]]:
+        additional_details = vulnerability.get("additionalDetails", [])
+        endpoint = self._extract_endpoint(additional_details)
+        if endpoint is not None:
+            return {"endpoint": endpoint}
+
+        credentials = self._extract_credentials(additional_details)
+        return {"credentials": credentials}
+
+    def _extract_endpoint(
+        self, additional_details: list[dict[str, dict[str, str]]]
+    ) -> str | None:
+        for detail in additional_details:
+            text_data: dict[str, str] = detail.get("textData", {})
+            if text := text_data.get("text"):
+                return text
+        return None
+
+    def _extract_credentials(
+        self, additional_details: list[dict[str, Any]]
+    ) -> list[str]:
+        credentials = []
+
+        for detail in additional_details:
+            if credential := detail.get("credential"):
+                credentials.append(
+                    self._format_credential(
+                        credential.get("username", ""), credential.get("password", "")
+                    )
+                )
+
+            for credential in detail.get("credentials", []):
+                credentials.append(
+                    self._format_credential(
+                        credential.get("username", ""), credential.get("password", "")
+                    )
+                )
+
+        return credentials
+
+    def _format_credential(self, username: str, password: str) -> str:
+        return f"{username}:{password}"
+
 
 def _compute_dna(
     vuln_title: str,
     vuln_location: agent_report_vulnerability_mixin.VulnerabilityLocation | None,
+    details: dict[str, Any] | None,
 ) -> str:
     """Compute a deterministic, debuggable DNA representation for a vulnerability.
     Args:
         vuln_title: The title of the vulnerability.
         vuln_location: The location of the vulnerability.
+        details: The tsunami result details.
     Returns:
         A deterministic JSON representation of the vulnerability DNA.
     """
@@ -258,6 +308,9 @@ def _compute_dna(
         location_dict: dict[str, Any] = vuln_location.to_dict()
         sorted_location_dict = _sort_dict(location_dict)
         dna_data["location"] = sorted_location_dict
+
+    if details is not None:
+        dna_data.update(details)
 
     return json.dumps(dna_data, sort_keys=True)
 
