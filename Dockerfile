@@ -1,48 +1,22 @@
-#Stage 1.
-FROM adoptopenjdk/openjdk13:debianslim as tsunami_builder
+FROM ghcr.io/google/tsunami-scanner-full:latest
 
-## Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates
-
-# Clone the plugins repo
-WORKDIR /usr/tsunami/repos
-RUN git clone --depth 1 "https://github.com/google/tsunami-security-scanner-plugins"
-
-# Build plugins
-WORKDIR /usr/tsunami/repos/tsunami-security-scanner-plugins/google
-RUN chmod +x build_all.sh && ./build_all.sh
-
-RUN mkdir /usr/tsunami/plugins && cp build/plugins/*.jar /usr/tsunami/plugins
-
-# Compile the Tsunami scanner
-RUN git clone --depth 1 "https://github.com/google/tsunami-security-scanner.git" /usr/repos/tsunami-security-scanner
-WORKDIR /usr/repos/tsunami-security-scanner
-RUN ./gradlew shadowJar \
-    && cp $(find "./" -name 'tsunami-main-*-cli.jar') /usr/tsunami/tsunami.jar \
-    && cp ./tsunami.yaml /usr/tsunami
-
-
-FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
-# Install dependencies
-RUN apt-get update && apt-get install -y software-properties-common  \
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get remove -y python*
+    && apt-get update && apt-get install -y --no-install-recommends \
+        nmap ncrack wireguard-tools iptables iproute2 \
+        python3.14 python3.14-dev python3.14-venv \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt update && apt install -y --no-install-recommends nmap ncrack ca-certificates openjdk-11-jre wireguard-tools openresolv iptables iproute2 python3.11 python3.11-dev python3-pip && rm -rf /var/lib/apt/lists/*
-
-COPY --from=tsunami_builder /usr/tsunami /usr/tsunami
-RUN mkdir -p /usr/tsunami/logs
-
-RUN mkdir /install
-WORKDIR /install
-RUN python3.11 -m pip install --upgrade pip
+RUN python3.14 -m venv /app/venv
 COPY requirement.txt /requirement.txt
-RUN python3.11 -m pip install -r /requirement.txt
+RUN /app/venv/bin/pip install --upgrade pip && /app/venv/bin/pip install -r /requirement.txt
 
 RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app/agent
-CMD ["python3.11", "/app/agent/tsunami_agent.py"]
+CMD ["/app/venv/bin/python", "/app/agent/tsunami_agent.py"]

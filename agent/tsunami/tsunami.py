@@ -54,7 +54,7 @@ class Tsunami:
         else:
             raise ValueError("Could not find any target.")
 
-    @func_timeout.func_set_timeout(TIMEOUT)  # type: ignore[misc]
+    @func_timeout.func_set_timeout(TIMEOUT)  # type: ignore[untyped-decorator]
     def _start_scan(self, target: tools.Target, output_file: str) -> None:
         """Run a tsunami scan using python subprocess.
 
@@ -69,7 +69,7 @@ class Tsunami:
             "java",
             "-cp",
             "/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*",
-            "-Dtsunami-config.location=/usr/tsunami/tsunami.yaml",
+            "-Dtsunami.config.location=/usr/tsunami/tsunami.yaml",
             "com.google.tsunami.main.cli.TsunamiCli",
             "--scan-results-local-output-format=JSON",
             f"--scan-results-local-output-filename={output_file}",
