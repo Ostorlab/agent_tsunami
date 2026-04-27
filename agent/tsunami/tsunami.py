@@ -69,7 +69,7 @@ class Tsunami:
             "java",
             "-cp",
             "/usr/tsunami/tsunami.jar:/usr/tsunami/plugins/*",
-            "-Dtsunami-config.location=/usr/tsunami/tsunami.yaml",
+            "-Dtsunami.config.location=/usr/tsunami/tsunami.yaml",
             "com.google.tsunami.main.cli.TsunamiCli",
             "--scan-results-local-output-format=JSON",
             f"--scan-results-local-output-filename={output_file}",
