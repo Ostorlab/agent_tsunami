@@ -41,5 +41,5 @@ jobs:
         python -m uv pip install -r tests/test-requirement.txt
     - name: Runnning tests with pytest.
       run: |
-          set -o pipefail
+        set -o pipefail
         pytest -m "not docker"
