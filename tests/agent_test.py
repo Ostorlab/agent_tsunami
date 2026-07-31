@@ -1,7 +1,5 @@
 """Unittests for agent."""
 
-from typing import List
-
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin
@@ -15,7 +13,7 @@ from agent.tsunami.factory import preapre_tagets_tools as tools
 
 def testTsunamiAgent_WhenMessageHaveInvalidIpVersion_ShouldNotCrash(
     tsunami_agent: ts_agt.AgentTsunami,
-    agent_mock: List[message.Message],
+    agent_mock: list[message.Message],
 ) -> None:
     """Test Tsunami agent when receiving a message with invalid ip version.
     Tsunami support ipv4, ipv6 and hostname (domain), therefore every received message
@@ -374,7 +372,7 @@ def testTsunamiAgent_WhenMessageIsIpRange_ShouldCallTsunamiForAllHosts(
 def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
     ip_small_range_message: message.Message,
     tsunami_agent_no_scope: ts_agt.AgentTsunami,
-    agent_mock: List[message.Message],
+    agent_mock: list[message.Message],
     mocker: plugin.MockerFixture,
 ) -> None:
     data = {
@@ -407,7 +405,7 @@ def testAgentTsunami_whenIpRangeScanned_emitsExactIpWhereVulnWasFound(
 
 def testAgentTsunami_whenIpNoVersion_shouldNotCrash(
     tsunami_agent_no_scope: ts_agt.AgentTsunami,
-    agent_mock: List[message.Message],
+    agent_mock: list[message.Message],
     mocker: plugin.MockerFixture,
 ) -> None:
     data = {
@@ -444,7 +442,7 @@ def testAgentTsunami_whenIpNoVersion_shouldNotCrash(
 
 def testAgentTsunami_whenIpNoTValid_shouldRaiseValueError(
     tsunami_agent_no_scope: ts_agt.AgentTsunami,
-    agent_mock: List[message.Message],
+    agent_mock: list[message.Message],
 ) -> None:
     invalid_ip = message.Message.from_data(
         "v3.asset.ip.v4", data={"host": "34.141.29", "mask": "32"}

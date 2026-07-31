@@ -1,6 +1,5 @@
 """Unittests for tsunami class."""
 
-from typing import List
 import json
 
 from ostorlab.agent.message import message
@@ -27,7 +26,7 @@ def _start_scan_failed(
 
 
 def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(
-    agent_mock: List[message.Message], mocker: plugin.MockerFixture
+    agent_mock: list[message.Message], mocker: plugin.MockerFixture
 ) -> None:
     """Tsunami class is responsible for running a scan using Tsunami scanned CLi on a specific target.
     when provided with valid Target the class method scan() should return a valid dict with all the findings from
@@ -45,7 +44,7 @@ def testTsunamiClass_WhenTsunamiScanStatusIsSuccess_ShouldReturnValidDict(
 
 
 def testTsunamiClass_WhenTsunamiScanFailed_ShouldReturnValidDict(
-    agent_mock: List[message.Message], mocker: plugin.MockerFixture
+    agent_mock: list[message.Message], mocker: plugin.MockerFixture
 ) -> None:
     """Tsunami class is responsible for running a scan using Tsunami scanned CLi on a specific target.
     when provided with valid Target the class method scan() should return a valid dict with all the findings from

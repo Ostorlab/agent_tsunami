@@ -3,10 +3,12 @@
 import dataclasses
 import ipaddress
 import logging
-from typing import Optional, Any
+from typing import Any
 from urllib import parse
 
 from ostorlab.agent.message import message as msg
+
+logger = logging.getLogger(__name__)
 
 IPV4_CIDR_LIMIT = 16
 IPV6_CIDR_LIMIT = 112
@@ -16,11 +18,11 @@ IPV6_CIDR_LIMIT = 112
 class Target:
     """Data Class for tsunami target."""
 
-    address: Optional[str] = None
-    version: Optional[str] = None
-    ip_network: Optional[ipaddress.IPv4Network | ipaddress.IPv6Network] = None
-    domain: Optional[str] = None
-    url: Optional[str] = None
+    address: str | None = None
+    version: str | None = None
+    ip_network: ipaddress.IPv4Network | ipaddress.IPv6Network | None = None
+    domain: str | None = None
+    url: str | None = None
 
 
 def _get_schema(message: msg.Message, args: dict[str, Any]) -> str:
@@ -78,16 +80,16 @@ def _prepare_ip_targets(message: msg.Message, host: str) -> list[Target]:
     ip_version = _get_ip_version(message)
     if ip_version == 6:
         if mask is not None and int(mask) < IPV6_CIDR_LIMIT:
-            logging.error(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
+            logger.error(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
             return []
         version = "v6"
     elif ip_version == 4:
         if mask is not None and int(mask) < IPV4_CIDR_LIMIT:
-            logging.error(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
+            logger.error(f"Subnet mask below {IPV6_CIDR_LIMIT} is not supported.")
             return []
         version = "v4"
     else:
-        logging.error(f"Incorrect ip version {ip_version}")
+        logger.error(f"Incorrect ip version {ip_version}")
         return []
     try:
         if mask is None:
@@ -99,7 +101,7 @@ def _prepare_ip_targets(message: msg.Message, host: str) -> list[Target]:
             for host in ip_network.hosts()
         ]
     except ValueError:
-        logging.info(
+        logger.info(
             "Incorrect %s / %s",
             {host},
             {mask},
