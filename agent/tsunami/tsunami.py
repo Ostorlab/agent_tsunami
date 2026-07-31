@@ -4,13 +4,12 @@ import json
 import logging
 import subprocess
 import tempfile
-from typing import Optional, Dict, Any
 import types
+from typing import Any
 
 import func_timeout
 
 from agent.tsunami.factory import preapre_tagets_tools as tools
-
 
 TIMEOUT = 300
 
@@ -80,19 +79,19 @@ class Tsunami:
             tsunami_command, encoding="utf-8", stdout=subprocess.DEVNULL, check=True
         )
 
-    def _parse_result(self, output_file: Optional[Any]) -> Dict[str, Any]:
+    def _parse_result(self, output_file: Any | None) -> dict[str, Any]:
         """After the scan is done, parse the output json file into a dict of the scan Findings.
         returns:
             - scan results.
         """
-        json_result: Dict[str, Any] = {"vulnerabilities": []}
+        json_result: dict[str, Any] = {"vulnerabilities": []}
         if output_file is not None:
             logger.info("scan is done, parsing the results from %s.", output_file.name)
             tsunami_result = json.load(output_file)
 
             if (
                 "SUCCEEDED" in tsunami_result["scanStatus"]
-                and "scanFindings" in tsunami_result.keys()
+                and "scanFindings" in tsunami_result
             ):
                 json_result["status"] = "success"
                 logger.debug("scan status: SUCCEEDED")
@@ -102,7 +101,7 @@ class Tsunami:
                 json_result["status"] = "failed"
         return json_result
 
-    def scan(self, target: tools.Target) -> Dict[str, Any]:
+    def scan(self, target: tools.Target) -> dict[str, Any]:
         """Start a scan, wait for the scan results and clean the scan output.
 
         returns:

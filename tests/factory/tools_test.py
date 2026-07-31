@@ -1,8 +1,8 @@
 """Unit test for factory tools."""
 
-import pytest
 import ipaddress
 
+import pytest
 from ostorlab.agent.message import message
 
 from agent.tsunami.factory import preapre_tagets_tools as tools

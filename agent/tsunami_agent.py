@@ -5,7 +5,7 @@ import json
 import logging
 import re
 import urllib
-from typing import Optional, Any
+from typing import Any
 
 from ostorlab.agent import agent
 from ostorlab.agent import definitions as agent_definitions
@@ -63,7 +63,7 @@ class AgentTsunami(
     ) -> None:
         super().__init__(agent_definition, agent_settings)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
-        self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
+        self._scope_urls_regex: str | None = self.args.get("scope_urls_regex")
         self._vpn_config = self.args.get("vpn_config")
         self._dns_config = self.args.get("dns_config")
 
@@ -84,9 +84,11 @@ class AgentTsunami(
         if self._should_process_target(message=message, target=targets[0]) is True:
             logger.info("Scanning targets `%s`.", targets)
             for target in targets:
-                if target.domain is not None:
-                    if self._check_asset_was_added(target) is True:
-                        return
+                if (
+                    target.domain is not None
+                    and self._check_asset_was_added(target) is True
+                ):
+                    return
                 with tsunami.Tsunami() as tsunami_scanner:
                     vuln_location = self._get_vuln_location(target)
 
@@ -102,10 +104,11 @@ class AgentTsunami(
 
     def _check_asset_was_added(self, targets: tools.Target) -> bool:
         """Check if the asset was scanned before or not"""
-        if targets.domain is not None:
-            if self.set_add(b"agent_tsunami", f"{targets.domain}"):
-                logger.debug("target %s/ was processed before, exiting", targets.domain)
-                return False
+        if targets.domain is not None and self.set_add(
+            b"agent_tsunami", f"{targets.domain}"
+        ):
+            logger.debug("target %s/ was processed before, exiting", targets.domain)
+            return False
         return True
 
     def _should_process_target(
@@ -117,7 +120,7 @@ class AgentTsunami(
             return self._should_process_ip_targets(message=message)
         return True
 
-    def _should_process_url_targets(self, target: Optional[str]) -> bool:
+    def _should_process_url_targets(self, target: str | None) -> bool:
         if target is None:
             return False
 

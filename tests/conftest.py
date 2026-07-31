@@ -2,7 +2,6 @@
 
 import json
 import pathlib
-from typing import List, Dict, Union
 
 import pytest
 from ostorlab.agent import definitions as agent_definitions
@@ -15,8 +14,8 @@ from agent import tsunami_agent
 
 @pytest.fixture
 def fixture_tsunami_agent_with_vpn(
-    agent_mock: List[message.Message],
-    agent_persist_mock: Dict[Union[str, bytes], Union[str, bytes]],
+    agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
 ) -> tsunami_agent.AgentTsunami:
     del agent_mock, agent_persist_mock
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
@@ -44,8 +43,8 @@ def fixture_tsunami_agent_with_vpn(
 
 @pytest.fixture(scope="function", name="tsunami_agent")
 def fixture_tsunami_agent(
-    agent_mock: List[message.Message],
-    agent_persist_mock: Dict[Union[str, bytes], Union[str, bytes]],
+    agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
 ) -> tsunami_agent.AgentTsunami:
     del agent_mock, agent_persist_mock
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
@@ -61,8 +60,8 @@ def fixture_tsunami_agent(
 
 @pytest.fixture(scope="function", name="tsunami_agent_no_scope")
 def fixture_tsunami_agent_no_scope(
-    agent_mock: List[message.Message],
-    agent_persist_mock: Dict[Union[str, bytes], Union[str, bytes]],
+    agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
 ) -> tsunami_agent.AgentTsunami:
     del agent_mock, agent_persist_mock
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:

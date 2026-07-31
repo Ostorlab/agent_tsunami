@@ -4,7 +4,6 @@ import datetime
 import logging
 import pathlib
 import subprocess
-from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ DNS_RESOLV_CONFIG_PATH = pathlib.Path("/etc/resolv.conf")
 JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=5)
 
 
-def _exec_command(command: List[str]) -> None:
+def _exec_command(command: list[str]) -> None:
     """Execute a command.
     Args:
         command: The command to execute.
